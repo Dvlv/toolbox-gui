@@ -2,11 +2,14 @@ import os
 import gi
 import subprocess
 
+from functools import partial
+
 from toolbox_name_window import ToolboxNameWindow
 from edit_window import EditWindow
+from info_window import InfoWindow
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 
 
 class MyWindow(Gtk.Window):
@@ -14,6 +17,7 @@ class MyWindow(Gtk.Window):
         super().__init__(title="Toolbox GUI")
         self.set_default_size(800,640)
         self.init_header_bar()
+        self.init_css()
 
         self.toolbox_rows = {}
 
@@ -30,12 +34,24 @@ class MyWindow(Gtk.Window):
         header.set_show_close_button(True)
 
         new_btn = Gtk.Button(label=None, image=Gtk.Image(stock=Gtk.STOCK_ADD))
+        new_btn.set_name("new-button")
         new_btn.connect("clicked", lambda s: self.create_new_toolbox())
-        new_btn.set_tooltip_text("Create New Toolbox")
+        new_btn.set_tooltip_text("Create a New Toolbox")
 
         header.pack_end(new_btn)
 
         self.set_titlebar(header)
+    
+    def init_css(self):
+        screen = Gdk.Screen.get_default()
+        provider = Gtk.CssProvider()
+        style_context = Gtk.StyleContext()
+        style_context.add_provider_for_screen(
+            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+        css = b"""
+        """
+        provider.load_from_data(css)
 
     def render_all_toolboxes(self):
         self.clear_main_box()
@@ -51,6 +67,17 @@ class MyWindow(Gtk.Window):
         for child in self.box.get_children():
             self.box.remove(child)
 
+    def create_toolbox_button(self, icon_name: str, tooltip: str, func):
+        icon = Gtk.Image()
+        icon.set_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
+
+        btn = Gtk.Button(label=None, image=icon)
+        btn.connect("clicked", lambda b: func())
+        btn.set_tooltip_text(tooltip)
+
+        return btn
+
+
     def render_toolbox_row(self, toolbox_info):
         tb_row = Gtk.Box(spacing=10)
         tb_row.set_border_width(30)
@@ -61,25 +88,16 @@ class MyWindow(Gtk.Window):
         lbl = Gtk.Label(label=f"(f{version}) {toolbox} ")
         buttons = []
 
-        open_btn = Gtk.Button(label=None, image=Gtk.Image(stock=Gtk.STOCK_OPEN))
-        open_btn.connect("clicked", lambda b: self.start_toolbox(toolbox))
-        open_btn.set_tooltip_text("Launch a Terminal in this Toolbox")
-        buttons.append(open_btn)
-
-        edit_btn = Gtk.Button(label=None, image=Gtk.Image(stock=Gtk.STOCK_EDIT))
-        edit_btn.connect("clicked", lambda b: self.edit_toolbox(toolbox))
-        edit_btn.set_tooltip_text("Edit this Toolbox")
-        buttons.append(edit_btn)
-
-        delete_btn = Gtk.Button(label=None, image=Gtk.Image(stock=Gtk.STOCK_DELETE))
-        delete_btn.connect("clicked", lambda b: self.confirm_delete_toolbox(toolbox))
-        delete_btn.set_tooltip_text("Delete this Toolbox")
-        buttons.append(delete_btn)
+        buttons.append(self.create_toolbox_button("dialog-information", "View Information about this Toolbox", partial(self.view_toolbox_info, toolbox)))
+        buttons.append(self.create_toolbox_button("preferences-system", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
+        buttons.append(self.create_toolbox_button("utilities-terminal", "Launch a Terminal in this Toolbox", partial(self.start_toolbox, toolbox)))
+        buttons.append(self.create_toolbox_button("system-software-install", "Install an RPM in this Toolbox", partial(self.view_toolbox_info, toolbox)))
+        buttons.append(self.create_toolbox_button("edit-delete", "Delete this Toolbox", partial(self.confirm_delete_toolbox, toolbox)))
 
         tb_row.pack_start(lbl, True, True, 0)
 
         for btn in buttons:
-            tb_row.pack_start(btn, False, False, 10)
+            tb_row.pack_start(btn, False, False, 3)
 
         tb_row.show_all()
         tb_frame.add(tb_row)
@@ -90,7 +108,7 @@ class MyWindow(Gtk.Window):
 
     def start_toolbox(self, toolbox: str):
         # Can't get subprocess to do this properly :/
-        os.system('gnome-terminal -- toolbox enter junk')
+        os.system(f'gnome-terminal -- toolbox enter {toolbox}')
 
     def edit_toolbox(self, toolbox: str):
         d = EditWindow(self, toolbox)
@@ -102,7 +120,6 @@ class MyWindow(Gtk.Window):
         d.destroy()
 
         self.render_all_toolboxes()
-
 
     def create_new_toolbox(self):
         d = ToolboxNameWindow(self)
@@ -140,6 +157,18 @@ class MyWindow(Gtk.Window):
     def execute_delete_toolbox(self, toolbox: str):
         os.system(f"podman stop {toolbox}")
         os.system(f"toolbox rm {toolbox}")
+
+    def view_toolbox_info(self, toolbox: str):
+        cmd = f"podman ps -a -f name={toolbox}" + ' --format={{.ID}}||{{.Image}}||{{.Status}}||{{.CreatedAt}}'
+        output = self.get_output(cmd.split(" "))
+        c_id, image, status, created_at  = output.split("||")
+
+        info = {"container_id": c_id, "image": image, "status":status, "created_at": created_at.split('.')[0]}
+        print(info)
+
+        d = InfoWindow(self, toolbox, info)
+        d.run()
+        d.destroy()
 
     def fetch_all_toolboxes(self):
         cmd = 'podman ps -a --format={{.Names}}||{{.Image}}'
