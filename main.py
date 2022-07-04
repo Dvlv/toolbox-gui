@@ -108,7 +108,8 @@ class MyWindow(Gtk.Window):
 
     def start_toolbox(self, toolbox: str):
         # Can't get subprocess to do this properly :/
-        os.system(f'gnome-terminal -- toolbox enter {toolbox}')
+        #os.system(f'gnome-terminal -- toolbox enter {toolbox}')
+        subprocess.run(["gnome-terminal", "--", "toolbox", "enter", toolbox])
 
     def edit_toolbox(self, toolbox: str):
         d = EditWindow(self, toolbox)
