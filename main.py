@@ -3,6 +3,7 @@ import gi
 import subprocess
 
 from functools import partial
+from shutil import which
 
 from toolbox_name_window import ToolboxNameWindow
 from edit_window import EditWindow
@@ -10,6 +11,12 @@ from info_window import InfoWindow
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
+
+terminal = "gnome-terminal"
+terminal_exec_arg = "--"
+if which(terminal) is None:
+    terminal = "konsole"
+    terminal_exec_arg = "-e"
 
 
 class MyWindow(Gtk.Window):
@@ -109,7 +116,7 @@ class MyWindow(Gtk.Window):
     def start_toolbox(self, toolbox: str):
         # Can't get subprocess to do this properly :/
         #os.system(f'gnome-terminal -- toolbox enter {toolbox}')
-        subprocess.run(["gnome-terminal", "--", "toolbox", "enter", toolbox])
+        subprocess.run([terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
 
     def edit_toolbox(self, toolbox: str):
         d = EditWindow(self, toolbox)
@@ -165,7 +172,6 @@ class MyWindow(Gtk.Window):
         c_id, image, status, created_at  = output.split("||")
 
         info = {"container_id": c_id, "image": image, "status":status, "created_at": created_at.split('.')[0]}
-        print(info)
 
         d = InfoWindow(self, toolbox, info)
         d.run()
