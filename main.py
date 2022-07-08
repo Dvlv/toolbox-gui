@@ -1,3 +1,4 @@
+import time
 import os
 import gi
 import subprocess
@@ -10,7 +11,7 @@ from edit_window import EditWindow
 from info_window import InfoWindow
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, Gio, GLib, GObject
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
@@ -84,16 +85,18 @@ class MyWindow(Gtk.Window):
 
         return btn
 
-
     def render_toolbox_row(self, toolbox_info):
         tb_row = Gtk.Box(spacing=10)
         tb_row.set_border_width(30)
         tb_frame = Gtk.Frame()
 
-        toolbox, version = toolbox_info[0], toolbox_info[1]
+        toolbox, version, status = toolbox_info[0], toolbox_info[1], toolbox_info[2]
 
         lbl = Gtk.Label(label=f"(f{version}) {toolbox} ")
         buttons = []
+
+        if status.startswith("Up"):
+            buttons.append(self.create_toolbox_button("media-stop", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
 
         buttons.append(self.create_toolbox_button("dialog-information", "View Information about this Toolbox", partial(self.view_toolbox_info, toolbox)))
         buttons.append(self.create_toolbox_button("preferences-system", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
@@ -117,6 +120,7 @@ class MyWindow(Gtk.Window):
         # Can't get subprocess to do this properly :/
         #os.system(f'gnome-terminal -- toolbox enter {toolbox}')
         subprocess.run([terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
+        Gio.io_scheduler_push_job(partial(self.delayed_rerender, self), None, GLib.PRIORITY_DEFAULT, None)
 
     def edit_toolbox(self, toolbox: str):
         d = EditWindow(self, toolbox)
@@ -177,8 +181,17 @@ class MyWindow(Gtk.Window):
         d.run()
         d.destroy()
 
+    def stop_toolbox(self, toolbox:str):
+        subprocess.run(["podman", "stop", toolbox])
+        Gio.io_scheduler_push_job(partial(self.delayed_rerender, self), None, GLib.PRIORITY_DEFAULT, None)
+
+    def delayed_rerender(self, *args):
+        time.sleep(2)
+        self.render_all_toolboxes()
+
+
     def fetch_all_toolboxes(self):
-        cmd = 'podman ps -a --format={{.Names}}||{{.Image}}'
+        cmd = 'podman ps -a --format={{.Names}}||{{.Image}}||{{.Status}}'
         toolboxes = self.get_output(cmd.split(" "))
 
         toolboxes = toolboxes.split("\n")[:-1]
@@ -186,9 +199,9 @@ class MyWindow(Gtk.Window):
         retval = []
 
         for tb in toolboxes:
-            name, image = tb.split("||")
+            name, image, status = tb.split("||")
             image_num = image.split(':')[-1]
-            retval.append((name, image_num))
+            retval.append((name, image_num, status))
 
         return retval
 
