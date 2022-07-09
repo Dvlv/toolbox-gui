@@ -7,11 +7,12 @@ from shutil import which
 
 from edit_window import EditWindow
 from info_window import InfoWindow
+from run_application_window import RunApplicationWindow
 from run_software_window import RunSoftwareWindow
 from toolbox_name_window import ToolboxNameWindow
 
-from main import Gtk
-from utils import get_output, create_toolbox_button, execute_delete_toolbox, fetch_all_toolboxes
+from main import Gtk, GLib, Gdk
+from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
@@ -26,6 +27,7 @@ class MyWindow(Gtk.Window):
         self.init_header_bar()
 
         self.toolbox_rows = {}
+        self.icon_cache = {}
 
         self.box = Gtk.Box(spacing=5, orientation=Gtk.Orientation.VERTICAL)
         self.box.set_homogeneous(False)
@@ -72,15 +74,20 @@ class MyWindow(Gtk.Window):
         lbl = Gtk.Label(label=f"(f{version}) {toolbox} ")
         buttons = []
 
+        application_menu_items = {
+            "Run a Command in this Toolbox": partial(self.run_from_toolbox, toolbox),
+            "Open an Application from this Toolbox": partial(self.open_application_in_toolbox, toolbox),
+            "Install an RPM in this Toolbox": partial(self.install_into_toolbox, toolbox),
+            "Update This Toolbox": partial(self.update_toolbox, toolbox),
+        }
+
         if status.startswith("Up"):
             buttons.append(create_toolbox_button("media-stop", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
 
         buttons.append(create_toolbox_button("dialog-information", "View Information about this Toolbox", partial(self.view_toolbox_info, tb_id, toolbox)))
         buttons.append(create_toolbox_button("preferences-system", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
         buttons.append(create_toolbox_button("utilities-terminal", "Launch a Terminal in this Toolbox", partial(self.start_toolbox, toolbox)))
-        buttons.append(create_toolbox_button("system-run", "Execute a Command in this Toolbox", partial(self.run_from_toolbox, toolbox)))
-        buttons.append(create_toolbox_button("document-open", "Run an Application in this Toolbox", partial(self.open_application_in_toolbox, toolbox)))
-        buttons.append(create_toolbox_button("system-software-install", "Install an RPM in this Toolbox", partial(self.install_into_toolbox, toolbox)))
+        buttons.append(create_popover_button("applications-other", "Application Options", application_menu_items))
         buttons.append(create_toolbox_button("edit-delete", "Delete this Toolbox", partial(self.confirm_delete_toolbox, toolbox)))
 
         tb_row.pack_start(lbl, True, True, 0)
@@ -110,10 +117,13 @@ class MyWindow(Gtk.Window):
 
         self.render_all_toolboxes()
 
-    def install_into_toolbox(self, toolbox: str):
+    def install_into_toolbox(self, toolbox: str, *args):
         file_to_install = self.show_file_chooser()
         if file_to_install:
             subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, "sudo", "dnf", "install", "-y", file_to_install])
+
+    def update_toolbox(self, toolbox, *args):
+        subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, "sudo", "dnf", "update", "-y"])
 
 
     def show_file_chooser(self):
@@ -138,7 +148,7 @@ class MyWindow(Gtk.Window):
 
         return None
 
-    def run_from_toolbox(self, toolbox: str):
+    def run_from_toolbox(self, toolbox: str, *args):
         dialog = RunSoftwareWindow(self, toolbox)
         response = dialog.run()
         cmd = None
@@ -151,12 +161,23 @@ class MyWindow(Gtk.Window):
         if cmd:
             subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, *cmd.split(" ")])
 
-    def open_application_in_toolbox(self, toolbox: str):
+    def open_application_in_toolbox(self, toolbox: str, *args):
         apps = get_output(["toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"])
         apps = apps.replace("\r\n", " ")
         apps = apps.replace("\t", " ")
 
         apps = [a for a in apps.split(" ") if a.endswith(".desktop")]
+
+        d = RunApplicationWindow(self, toolbox, apps)
+        response = d.run()
+        if response == Gtk.ResponseType.CANCEL:
+            d.destroy()
+
+        chosen_app = d.get_chosen_app()
+        d.destroy()
+
+        if chosen_app:
+            GLib.timeout_add_seconds(0.5, launch_app, toolbox, chosen_app)
 
     def create_new_toolbox(self):
         d = ToolboxNameWindow(self)
