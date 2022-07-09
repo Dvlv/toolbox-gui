@@ -1,7 +1,4 @@
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from main import Gtk
 
 class InfoWindow(Gtk.MessageDialog):
     def __init__(self, parent, toolbox: str, info: dict):
