@@ -64,7 +64,8 @@ def launch_app(toolbox: str, app: str):
     # gtk-launch doesnt work from toolbox run :/
     app_exec_cmd = get_exec_from_desktop(toolbox, app)
     if app_exec_cmd:
-        subprocess.run(["toolbox", "run", "-c", toolbox, app_exec_cmd])
+        cmd = app_exec_cmd.split(" ")
+        subprocess.run(["toolbox", "run", "-c", toolbox, *cmd])
 
 def get_exec_from_desktop(toolbox: str, app: str):
     contents = get_output(f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" "))
