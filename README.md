@@ -3,6 +3,7 @@
 - [ ] add tb2dt functionality
 - [ ] docstrings etc
 - [ ] Make scrollable
+- [ ] Align toolbox names left
 - [x] get list of apps with desktop files and their icons
 - [x] group package related stuff into submenu
 - [x] make Enter submit on dialogs
