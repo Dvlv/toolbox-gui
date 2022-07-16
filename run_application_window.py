@@ -14,7 +14,16 @@ class ImgFetchThread(threading.Thread):
         
         for app in self.master.imgs.keys():
             icon = get_icon_from_desktop(self.master.toolbox, app)
-            self.master.imgs[app].set_from_icon_name(icon, Gtk.IconSize.BUTTON)
+            img = self.master.imgs[app]
+            idx, spin = self.master.spinners[app]
+
+            spin.stop()
+            spin.hide()
+
+            img.set_from_icon_name(icon, Gtk.IconSize.BUTTON)
+            self.master.grid.attach(img, 1, idx, 1, 1)
+            self.master.grid.show_all()
+
             self.master.add_icon_to_cache(app, icon)
 
         return
@@ -42,6 +51,7 @@ class RunApplicationWindow(Gtk.MessageDialog):
 
         self.chosen_app = None
         self.imgs = {}
+        self.spinners = {}
         for idx, app in enumerate(self.apps):
             nice_app = app.replace("-", " ")
             nice_app = nice_app.replace("_", " ")
@@ -51,8 +61,13 @@ class RunApplicationWindow(Gtk.MessageDialog):
             img = Gtk.Image()
             if app in self.parent.icon_cache:
                 img.set_from_icon_name(self.parent.icon_cache[app], Gtk.IconSize.BUTTON)
+                grid.attach(img, 1, idx, 1, 1)
             else:
                 self.imgs[app] = img
+                spin = Gtk.Spinner()
+                self.spinners[app] = [idx, spin]
+                grid.attach(spin, 1, idx, 1, 1)
+                spin.start()
 
             lbl = Gtk.Label(label=nice_app)
             lbl.set_xalign(0)
@@ -61,9 +76,8 @@ class RunApplicationWindow(Gtk.MessageDialog):
             btn.connect("clicked", partial(self.on_app_chosen, app))
 
             i_btn = Gtk.Button(label="Add to Menu")
-            i_btn.connect("clicked", partial(self.on_app_chosen, app))
+            i_btn.connect("clicked", partial(self.add_to_menu, app))
 
-            grid.attach(img, 1, idx, 1, 1)
             grid.attach(lbl, 2, idx, 1, 1)
             grid.attach(i_btn, 3, idx, 1, 1)
             grid.attach(btn, 4, idx, 1, 1)
@@ -84,6 +98,11 @@ class RunApplicationWindow(Gtk.MessageDialog):
     def on_app_chosen(self, app: str, *args):
         self.chosen_app = app
         self.emit("response", Gtk.ResponseType.OK)
+
+    def add_to_menu(self, app: str, *args):
+        self.parent.copy_desktop_to_host(self.toolbox, app)
+        self.format_secondary_text(f"{app} copied to host!")
+
 
     def set_chosen_app(self, app: str):
         self.chosen_app = app

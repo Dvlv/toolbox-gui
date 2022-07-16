@@ -16,6 +16,7 @@ def create_toolbox_button(icon_name: str, tooltip: str, func):
     btn = Gtk.Button(label=None, image=icon)
     btn.connect("clicked", lambda b: func())
     btn.set_tooltip_text(tooltip)
+    btn.get_style_context().add_class("tb_btn")
 
     return btn
 
@@ -38,6 +39,8 @@ def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
 
     btn = Gtk.MenuButton(label=None, image=icon, popover=popover)
     btn.set_tooltip_text(tooltip)
+
+    btn.get_style_context().add_class("tb_btn")
 
     return btn
 
@@ -87,3 +90,38 @@ def get_icon_from_desktop(toolbox: str, app: str):
             break
 
     return icon
+
+def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
+
+    home = os.path.expanduser("~")
+    app_path = f"{home}/.local/share/applications/{app}"
+
+    content = []
+    with open(app_path, "r") as f:
+        content = f.readlines()
+        for idx, line in enumerate(content):
+            if line.startswith("Exec="):
+                print("found exec")
+                content[idx] = line.replace("Exec=", f"Exec=toolbox run -c {toolbox} ")
+
+    with open(app_path, "w") as f:
+        f.writelines(content)
+
+
+def is_dark_theme():
+    try:
+        out = subprocess.run(
+            ['gsettings', 'get', 'org.gnome.desktop.interface', 'color-scheme'],
+            capture_output=True)
+        stdout = out.stdout.decode()
+    except:
+        return False
+
+    try:
+        theme = stdout.lower().strip()[1:-1]
+        if '-dark' in theme.lower():
+            return True
+        else:
+            return False
+    except IndexError:
+        return False

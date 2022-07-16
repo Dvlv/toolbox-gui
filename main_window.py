@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 
@@ -12,7 +13,7 @@ from run_software_window import RunSoftwareWindow
 from toolbox_name_window import ToolboxNameWindow
 
 from main import Gtk, GLib, Gdk
-from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app
+from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app, edit_exec_of_toolbox_desktop, is_dark_theme
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
@@ -23,18 +24,67 @@ if which(terminal) is None:
 class MyWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="Toolbox GUI")
-        self.set_default_size(800,640)
         self.init_header_bar()
 
         self.toolbox_rows = {}
         self.icon_cache = {}
 
-        self.box = Gtk.Box(spacing=5, orientation=Gtk.Orientation.VERTICAL)
-        self.box.set_homogeneous(False)
+        self.scrolled = Gtk.ScrolledWindow()
+        self.scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        #self.box.set_homogeneous(False)
+
+        self.scrolled.add(self.box)
 
         self.render_all_toolboxes()
-        self.add(self.box)
+        self.add(self.scrolled)
+
+        d_width = 650
+        calc_height = 75 * len(self.toolbox_rows)
+        if calc_height > 900:
+            calc_height = 900
+        self.set_default_size(d_width, calc_height)
+
+        self.apply_css()
+
         self.box.show_all()
+
+    def apply_css(self):
+        css = self.get_css()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(css)
+        context = Gtk.StyleContext()
+        screen = Gdk.Screen.get_default()
+        context.add_provider_for_screen(screen, css_provider,
+                                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        settings = Gtk.Settings.get_default()
+        settings.set_property("gtk-application-prefer-dark-theme", is_dark_theme())  
+
+
+    def get_css(self):
+        primary = "white"
+        primary2 = "#efefef"
+
+        if is_dark_theme():
+            primary = "#020202"
+            primary2 = "#333333"
+
+        css = f"""
+
+        .tb_row {{
+            background: {primary};
+            border: none;
+            padding: 20px;
+        }}
+
+        .tb_row:nth-child(even) {{
+            background: {primary2};
+        }}
+        """
+
+        return css.encode()
 
     def init_header_bar(self):
         header = Gtk.HeaderBar()
@@ -45,6 +95,7 @@ class MyWindow(Gtk.Window):
         new_btn.set_name("new-button")
         new_btn.connect("clicked", lambda s: self.create_new_toolbox())
         new_btn.set_tooltip_text("Create a New Toolbox")
+        new_btn.get_style_context().add_class("add_btn")
 
         header.pack_end(new_btn)
 
@@ -66,12 +117,16 @@ class MyWindow(Gtk.Window):
 
     def render_toolbox_row(self, toolbox_info):
         tb_row = Gtk.Box(spacing=10)
-        tb_row.set_border_width(30)
+        tb_row.get_style_context().add_class("tb_row")
+
         tb_frame = Gtk.Frame()
+        tb_frame.get_style_context().add_class("tb_frame")
 
         toolbox, version, status, tb_id = toolbox_info[0], toolbox_info[1], toolbox_info[2], toolbox_info[3]
 
         lbl = Gtk.Label(label=f"(f{version}) {toolbox} ")
+        lbl.set_xalign(0)
+
         buttons = []
 
         application_menu_items = {
@@ -96,9 +151,9 @@ class MyWindow(Gtk.Window):
             tb_row.pack_start(btn, False, False, 3)
 
         tb_row.show_all()
-        tb_frame.add(tb_row)
+        #tb_frame.add(tb_row)
 
-        self.box.pack_start(tb_frame, False, False, 10)
+        self.box.pack_start(tb_row, False, False, 0)
 
         self.toolbox_rows[toolbox] = tb_row
 
@@ -124,6 +179,11 @@ class MyWindow(Gtk.Window):
 
     def update_toolbox(self, toolbox, *args):
         subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, "sudo", "dnf", "update", "-y"])
+
+    def copy_desktop_to_host(self, toolbox: str, app: str):
+        home = os.path.expanduser("~")
+        subprocess.run(["toolbox", "run", "-c", toolbox, "cp", f"/usr/share/applications/{app}", f"{home}/.local/share/applications/{app}"])
+        edit_exec_of_toolbox_desktop(toolbox, app) 
 
 
     def show_file_chooser(self):
@@ -230,5 +290,4 @@ class MyWindow(Gtk.Window):
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
     def delayed_rerender(self, *args):
-        time.sleep(2)
         self.render_all_toolboxes()
