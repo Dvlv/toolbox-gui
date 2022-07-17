@@ -2,7 +2,7 @@ import os
 import subprocess
 from functools import partial
 
-from main import Gtk, Gio
+from app import Gtk, Gio
 
 def get_output(cmd: str):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)

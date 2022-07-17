@@ -1,4 +1,4 @@
-from main import Gtk
+from app import Gtk
 
 class InfoWindow(Gtk.MessageDialog):
     def __init__(self, parent, toolbox: str, info: dict):

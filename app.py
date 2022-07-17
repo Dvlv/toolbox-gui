@@ -1,7 +1,7 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, Gio, GLib, GObject
+from gi.repository import Gtk, Gdk, Gio, GLib, GObject, GdkPixbuf
 
 
 if __name__ == "__main__":

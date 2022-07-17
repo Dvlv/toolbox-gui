@@ -12,7 +12,7 @@ from run_application_window import RunApplicationWindow
 from run_software_window import RunSoftwareWindow
 from toolbox_name_window import ToolboxNameWindow
 
-from main import Gtk, GLib, Gdk
+from app import Gtk, GLib, Gdk
 from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app, edit_exec_of_toolbox_desktop, is_dark_theme
 
 terminal = "gnome-terminal"
@@ -91,7 +91,9 @@ class MyWindow(Gtk.Window):
         header.set_title("Toolbox GUI")
         header.set_show_close_button(True)
 
-        new_btn = Gtk.Button(label=None, image=Gtk.Image(stock=Gtk.STOCK_ADD))
+        img = Gtk.Image()
+        img.set_from_icon_name("list-add", Gtk.IconSize.BUTTON)
+        new_btn = Gtk.Button(image=img)
         new_btn.set_name("new-button")
         new_btn.connect("clicked", lambda s: self.create_new_toolbox())
         new_btn.set_tooltip_text("Create a New Toolbox")
@@ -137,12 +139,12 @@ class MyWindow(Gtk.Window):
         }
 
         if status.startswith("Up"):
-            buttons.append(create_toolbox_button("media-stop", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
+            buttons.append(create_toolbox_button("media-playback-stop", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
 
         buttons.append(create_toolbox_button("dialog-information", "View Information about this Toolbox", partial(self.view_toolbox_info, tb_id, toolbox)))
         buttons.append(create_toolbox_button("preferences-system", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
         buttons.append(create_toolbox_button("utilities-terminal", "Launch a Terminal in this Toolbox", partial(self.start_toolbox, toolbox)))
-        buttons.append(create_popover_button("applications-other", "Application Options", application_menu_items))
+        buttons.append(create_popover_button("system-software-install", "Application Options", application_menu_items))
         buttons.append(create_toolbox_button("edit-delete", "Delete this Toolbox", partial(self.confirm_delete_toolbox, toolbox)))
 
         tb_row.pack_start(lbl, True, True, 0)
