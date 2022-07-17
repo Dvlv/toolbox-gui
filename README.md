@@ -1,12 +1,24 @@
 # Toolbox GUI
+A GUI manager for your toolboxes, made with Python and GTK.
 
-- [ ] add tb2dt functionality
-- [ ] docstrings etc
-- [ ] Make scrollable
-- [ ] Align toolbox names left
-- [x] get list of apps with desktop files and their icons
-- [x] group package related stuff into submenu
-- [x] make Enter submit on dialogs
-- [x] work with container_ids not names, since Info fails with "brave-beta" and "brave" both existing
-- [x] move stuff out into a utils module
-- [x] swap buttons round
+## Functionality
+- :plus: - Create new Toolbox.
+- :stop: - Stop Toolbox (only appears if running).
+- :i: - View Toolbox information.
+- :gear: - Change Toolbox Settings (name).
+- :terminal: - Open a terminal in Toolbox
+- :menu:
+    - Run a Command inside Toolbox
+    - View Applications inside Toolbox
+    - Install an RPM inside Toolbox
+    - Update Toolbox
+- :trash: - Delete Toolbox
+
+## Running
+Clone this repo, then execute `./toolbox-gui`. A Silverblue installation should come with the necessary python dependencies out-of-the-box. Kinoite may require the installation of `PyGObject`.
+
+## TODO
+- [ ] Docstrings
+- [ ] Check Kinoite
+- [ ] Icon
+- [ ] Flatpak
