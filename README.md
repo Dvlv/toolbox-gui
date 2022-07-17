@@ -20,6 +20,6 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue installation should 
 ## TODO
 - [ ] Docstrings
 - [ ] Check Kinoite
-- [ ] opy icons over when moving desktop file
+- [ ] Copy icons over when moving desktop file
 - [ ] Icon
 - [ ] Flatpak
