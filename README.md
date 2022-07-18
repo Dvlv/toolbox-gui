@@ -1,6 +1,8 @@
 # Toolbox GUI
 A GUI manager for your toolboxes, made with Python and GTK.
 
+![screenshot](screenshot.png)
+
 ## Functionality
 - :heavy_plus_sign: - Create new Toolbox.
 - ⏹ - Stop Toolbox (only appears if running).
