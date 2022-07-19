@@ -19,12 +19,13 @@ A GUI manager for your toolboxes, made with Python and GTK.
 (Icons may differ based on your icon theme)
 
 ## Running
-Clone this repo, then execute `./toolbox-gui`. A Silverblue installation should come with the necessary python dependencies out-of-the-box. Kinoite may require the installation of `PyGObject`.
+Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installation should come with the necessary python dependencies out-of-the-box.
 
 ## TODO
-- [ ] Docstrings
-- [ ] Check Kinoite
+- [ ] Docstrings, move functions about
+- [ ] Icon size hack for the main window buttons (Kinoite)
 - [ ] Initial download requires console use, look for -y flag in toolbox create
 - [ ] Copy icons over when moving desktop file
 - [ ] Icon
 - [ ] Flatpak
+- [x] Check Kinoite
