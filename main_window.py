@@ -92,7 +92,7 @@ class MyWindow(Gtk.Window):
         header.set_show_close_button(True)
 
         img = Gtk.Image()
-        img.set_from_icon_name("list-add", Gtk.IconSize.BUTTON)
+        img.set_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON)
         new_btn = Gtk.Button(image=img)
         new_btn.set_name("new-button")
         new_btn.connect("clicked", lambda s: self.create_new_toolbox())
@@ -139,13 +139,13 @@ class MyWindow(Gtk.Window):
         }
 
         if status.startswith("Up"):
-            buttons.append(create_toolbox_button("media-playback-stop", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
+            buttons.append(create_toolbox_button("media-playback-stop-symbolic", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
 
-        buttons.append(create_toolbox_button("dialog-information", "View Information about this Toolbox", partial(self.view_toolbox_info, tb_id, toolbox)))
-        buttons.append(create_toolbox_button("preferences-system", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
-        buttons.append(create_toolbox_button("utilities-terminal", "Launch a Terminal in this Toolbox", partial(self.start_toolbox, toolbox)))
-        buttons.append(create_popover_button("system-software-install", "Application Options", application_menu_items))
-        buttons.append(create_toolbox_button("edit-delete", "Delete this Toolbox", partial(self.confirm_delete_toolbox, toolbox)))
+        buttons.append(create_toolbox_button("dialog-information-symbolic", "View Information about this Toolbox", partial(self.view_toolbox_info, tb_id, toolbox)))
+        buttons.append(create_toolbox_button("preferences-system-symbolic", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
+        buttons.append(create_toolbox_button("utilities-terminal-symbolic", "Launch a Terminal in this Toolbox", partial(self.start_toolbox, toolbox)))
+        buttons.append(create_popover_button("system-software-install-symbolic", "Application Options", application_menu_items))
+        buttons.append(create_toolbox_button("user-trash-symbolic", "Delete this Toolbox", partial(self.confirm_delete_toolbox, toolbox)))
 
         tb_row.pack_start(lbl, True, True, 0)
 
