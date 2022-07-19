@@ -24,6 +24,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue installation should 
 ## TODO
 - [ ] Docstrings
 - [ ] Check Kinoite
+- [ ] Initial download requires console use, look for -y flag in toolbox create
 - [ ] Copy icons over when moving desktop file
 - [ ] Icon
 - [ ] Flatpak
