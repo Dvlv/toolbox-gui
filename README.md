@@ -27,7 +27,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - [ ] Error message in create window if toolbox already exists with that name
 - [ ] Copy icons over when moving desktop file
 - [ ] Icon
-- [ ] Flatpak
+- [ ] Flatpak - detect with `getenv ('FLATPAK_ID')` or `/.flatpak-info`
 - [x] Icon size hack for the main window buttons (Kinoite)
 - [x] Check Kinoite
 - [x] Initial download requires console use, look for -y flag in toolbox create
