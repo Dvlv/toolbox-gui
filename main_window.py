@@ -251,6 +251,11 @@ class MyWindow(Gtk.Window):
         if tb_name:
             subprocess.run(["toolbox", "create", tb_name, "-y"])
 
+        current_w, current_h = self.get_size()
+        min_h = 75 * (len(self.toolbox_rows) + 1)
+        if current_h < min_h and current_h < 900:
+            self.resize(current_w, min_h)
+
         self.render_all_toolboxes()
 
     def confirm_delete_toolbox(self, toolbox: str):
