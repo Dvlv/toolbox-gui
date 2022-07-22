@@ -2,7 +2,7 @@ import os
 import subprocess
 from functools import partial
 
-from app import Gtk, Gio
+from app import Gtk, Gio, GdkPixbuf
 
 def get_output(cmd: str):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -11,7 +11,7 @@ def get_output(cmd: str):
 
 def create_toolbox_button(icon_name: str, tooltip: str, func):
     icon = Gtk.Image()
-    icon.set_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
+    set_icon_at_small_size(icon_name, icon)
 
     btn = Gtk.Button(label=None, image=icon)
     btn.connect("clicked", lambda b: func())
@@ -19,6 +19,22 @@ def create_toolbox_button(icon_name: str, tooltip: str, func):
     btn.get_style_context().add_class("tb_btn")
 
     return btn
+
+def set_icon_at_small_size(icon: str, img: Gtk.Image):
+    thm = Gtk.IconTheme.get_default()
+    info = thm.lookup_icon(icon, 16, 0)
+    set_from_pb = False
+    if info:
+        fn = info.get_filename()
+        if fn:
+            pb = GdkPixbuf.Pixbuf.new_from_file_at_scale(fn, 16, 16, True)
+            img.set_from_pixbuf(pb)
+            set_from_pb = True
+
+    if not set_from_pb:
+        img.set_from_icon_name(icon, Gtk.IconSize.BUTTON)
+
+    return img
 
 def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
     popover = Gtk.Popover()
@@ -35,7 +51,7 @@ def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
     popover.set_position(Gtk.PositionType.BOTTOM)
 
     icon = Gtk.Image()
-    icon.set_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
+    set_icon_at_small_size(icon_name, icon)
 
     btn = Gtk.MenuButton(label=None, image=icon, popover=popover)
     btn.set_tooltip_text(tooltip)

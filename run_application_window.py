@@ -3,6 +3,7 @@ import gobject
 from functools import partial
 
 from app import Gtk, GLib, GdkPixbuf
+from utils import set_icon_at_small_size
 
 class ImgFetchThread(threading.Thread):
     def __init__(self, master):
@@ -20,18 +21,7 @@ class ImgFetchThread(threading.Thread):
             spin.stop()
             spin.hide()
 
-            thm = Gtk.IconTheme.get_default()
-            info = thm.lookup_icon(icon, 16, 0)
-            set_from_pb = False
-            if info:
-                fn = info.get_filename()
-                if fn:
-                    pb = GdkPixbuf.Pixbuf.new_from_file_at_scale(fn, 16, 16, True)
-                    img.set_from_pixbuf(pb)
-                    set_from_pb = True
-
-            if not set_from_pb:
-                img.set_from_icon_name(icon, Gtk.IconSize.BUTTON)
+            set_icon_at_small_size(icon, img)
 
             self.master.grid.attach(img, 1, idx, 1, 1)
             self.master.grid.show_all()
