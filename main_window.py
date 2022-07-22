@@ -185,8 +185,7 @@ class MyWindow(Gtk.Window):
     def copy_desktop_to_host(self, toolbox: str, app: str):
         home = os.path.expanduser("~")
         subprocess.run(["toolbox", "run", "-c", toolbox, "cp", f"/usr/share/applications/{app}", f"{home}/.local/share/applications/{app}"])
-        edit_exec_of_toolbox_desktop(toolbox, app) 
-
+        GLib.timeout_add_seconds(1, edit_exec_of_toolbox_desktop, toolbox, app)
 
     def show_file_chooser(self):
         dialog = Gtk.FileChooserDialog(

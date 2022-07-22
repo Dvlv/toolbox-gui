@@ -1,3 +1,4 @@
+import time
 import os
 import subprocess
 from functools import partial
@@ -108,9 +109,14 @@ def get_icon_from_desktop(toolbox: str, app: str):
     return icon
 
 def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
-
     home = os.path.expanduser("~")
     app_path = f"{home}/.local/share/applications/{app}"
+    if not os.path.exists(app_path):
+        time.sleep(1)
+
+        if not os.path.exists(app_path):
+            # bail
+            return
 
     content = []
     with open(app_path, "r") as f:
