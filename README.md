@@ -23,6 +23,8 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 
 ## TODO
 - [ ] Docstrings, move functions about
+- [ ] Message in create window if there are no existing toolboxes
+- [ ] Error message in create window if toolbox already exists with that name
 - [ ] Copy icons over when moving desktop file
 - [ ] Icon
 - [ ] Flatpak
