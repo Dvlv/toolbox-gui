@@ -108,6 +108,15 @@ def get_icon_from_desktop(toolbox: str, app: str):
 
     return icon
 
+def copy_desktop_from_toolbox_to_host(toolbox: str, app: str):
+    home = os.path.expanduser("~")
+    local_folder = f"{home}/.local/share/applications"
+    if not os.path.exists(local_folder):
+        os.makedirs(local_folder)
+
+    subprocess.run(["toolbox", "run", "-c", toolbox, "cp", f"/usr/share/applications/{app}", f"{home}/.local/share/applications/{app}"])
+
+
 def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
     home = os.path.expanduser("~")
     app_path = f"{home}/.local/share/applications/{app}"

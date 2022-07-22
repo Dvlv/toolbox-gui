@@ -23,9 +23,10 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 
 ## TODO
 - [ ] Docstrings, move functions about
-- [ ] Icon size hack for the main window buttons (Kinoite)
+- [ ] Check and create ~/.local/share/applications if not exists
 - [ ] Initial download requires console use, look for -y flag in toolbox create
 - [ ] Copy icons over when moving desktop file
 - [ ] Icon
 - [ ] Flatpak
+- [x] Icon size hack for the main window buttons (Kinoite)
 - [x] Check Kinoite

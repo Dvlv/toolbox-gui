@@ -13,7 +13,7 @@ from run_software_window import RunSoftwareWindow
 from toolbox_name_window import ToolboxNameWindow
 
 from app import Gtk, GLib, Gdk
-from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app, edit_exec_of_toolbox_desktop, is_dark_theme
+from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app, edit_exec_of_toolbox_desktop, is_dark_theme, copy_desktop_from_toolbox_to_host
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
@@ -183,8 +183,7 @@ class MyWindow(Gtk.Window):
         subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, "sudo", "dnf", "update", "-y"])
 
     def copy_desktop_to_host(self, toolbox: str, app: str):
-        home = os.path.expanduser("~")
-        subprocess.run(["toolbox", "run", "-c", toolbox, "cp", f"/usr/share/applications/{app}", f"{home}/.local/share/applications/{app}"])
+        copy_desktop_from_toolbox_to_host(toolbox, app)
         GLib.timeout_add_seconds(1, edit_exec_of_toolbox_desktop, toolbox, app)
 
     def show_file_chooser(self):
@@ -247,10 +246,10 @@ class MyWindow(Gtk.Window):
         if response == Gtk.ResponseType.OK:
             tb_name = d.get_entered_name()
 
-        if tb_name:
-            subprocess.run(["toolbox", "create", tb_name])
-
         d.destroy()
+
+        if tb_name:
+            subprocess.run(["toolbox", "create", tb_name, "-y"])
 
         self.render_all_toolboxes()
 
