@@ -13,13 +13,24 @@ from run_software_window import RunSoftwareWindow
 from toolbox_name_window import ToolboxNameWindow
 
 from app import Gtk, GLib, Gdk
-from utils import get_output, create_toolbox_button, create_popover_button, execute_delete_toolbox, fetch_all_toolboxes, launch_app, edit_exec_of_toolbox_desktop, is_dark_theme, copy_desktop_from_toolbox_to_host
+from utils import (
+    get_output,
+    create_toolbox_button,
+    create_popover_button,
+    execute_delete_toolbox,
+    fetch_all_toolboxes,
+    launch_app,
+    edit_exec_of_toolbox_desktop,
+    is_dark_theme,
+    copy_desktop_from_toolbox_to_host,
+)
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
 if which(terminal) is None:
     terminal = "konsole"
     terminal_exec_arg = "-e"
+
 
 class MyWindow(Gtk.Window):
     def __init__(self):
@@ -33,7 +44,7 @@ class MyWindow(Gtk.Window):
         self.scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        #self.box.set_homogeneous(False)
+        # self.box.set_homogeneous(False)
 
         self.scrolled.add(self.box)
 
@@ -56,12 +67,12 @@ class MyWindow(Gtk.Window):
         css_provider.load_from_data(css)
         context = Gtk.StyleContext()
         screen = Gdk.Screen.get_default()
-        context.add_provider_for_screen(screen, css_provider,
-                                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        context.add_provider_for_screen(
+            screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
 
         settings = Gtk.Settings.get_default()
-        settings.set_property("gtk-application-prefer-dark-theme", is_dark_theme())  
-
+        settings.set_property("gtk-application-prefer-dark-theme", is_dark_theme())
 
     def get_css(self):
         primary = "white"
@@ -102,7 +113,7 @@ class MyWindow(Gtk.Window):
         header.pack_end(new_btn)
 
         self.set_titlebar(header)
-    
+
     def render_all_toolboxes(self):
         self.clear_main_box()
 
@@ -124,7 +135,12 @@ class MyWindow(Gtk.Window):
         tb_frame = Gtk.Frame()
         tb_frame.get_style_context().add_class("tb_frame")
 
-        toolbox, version, status, tb_id = toolbox_info[0], toolbox_info[1], toolbox_info[2], toolbox_info[3]
+        toolbox, version, status, tb_id = (
+            toolbox_info[0],
+            toolbox_info[1],
+            toolbox_info[2],
+            toolbox_info[3],
+        )
 
         lbl = Gtk.Label(label=f"(f{version}) {toolbox} ")
         lbl.set_xalign(0)
@@ -133,19 +149,59 @@ class MyWindow(Gtk.Window):
 
         application_menu_items = {
             "Run a Command in this Toolbox": partial(self.run_from_toolbox, toolbox),
-            "Open an Application from this Toolbox": partial(self.open_application_in_toolbox, toolbox),
-            "Install an RPM in this Toolbox": partial(self.install_into_toolbox, toolbox),
+            "Open an Application from this Toolbox": partial(
+                self.open_application_in_toolbox, toolbox
+            ),
+            "Install an RPM in this Toolbox": partial(
+                self.install_into_toolbox, toolbox
+            ),
             "Update This Toolbox": partial(self.update_toolbox, toolbox),
         }
 
         if status.startswith("Up"):
-            buttons.append(create_toolbox_button("media-playback-stop-symbolic", "Stop this Toolbox", partial(self.stop_toolbox, toolbox)))
+            buttons.append(
+                create_toolbox_button(
+                    "media-playback-stop-symbolic",
+                    "Stop this Toolbox",
+                    partial(self.stop_toolbox, toolbox),
+                )
+            )
 
-        buttons.append(create_toolbox_button("dialog-information-symbolic", "View Information about this Toolbox", partial(self.view_toolbox_info, tb_id, toolbox)))
-        buttons.append(create_toolbox_button("preferences-system-symbolic", "Edit this Toolbox", partial(self.edit_toolbox, toolbox)))
-        buttons.append(create_toolbox_button("utilities-terminal-symbolic", "Launch a Terminal in this Toolbox", partial(self.start_toolbox, toolbox)))
-        buttons.append(create_popover_button("system-software-install-symbolic", "Application Options", application_menu_items))
-        buttons.append(create_toolbox_button("user-trash-symbolic", "Delete this Toolbox", partial(self.confirm_delete_toolbox, toolbox)))
+        buttons.append(
+            create_toolbox_button(
+                "dialog-information-symbolic",
+                "View Information about this Toolbox",
+                partial(self.view_toolbox_info, tb_id, toolbox),
+            )
+        )
+        buttons.append(
+            create_toolbox_button(
+                "preferences-system-symbolic",
+                "Edit this Toolbox",
+                partial(self.edit_toolbox, toolbox),
+            )
+        )
+        buttons.append(
+            create_toolbox_button(
+                "utilities-terminal-symbolic",
+                "Launch a Terminal in this Toolbox",
+                partial(self.start_toolbox, toolbox),
+            )
+        )
+        buttons.append(
+            create_popover_button(
+                "system-software-install-symbolic",
+                "Application Options",
+                application_menu_items,
+            )
+        )
+        buttons.append(
+            create_toolbox_button(
+                "user-trash-symbolic",
+                "Delete this Toolbox",
+                partial(self.confirm_delete_toolbox, toolbox),
+            )
+        )
 
         tb_row.pack_start(lbl, True, True, 0)
 
@@ -153,7 +209,7 @@ class MyWindow(Gtk.Window):
             tb_row.pack_start(btn, False, False, 3)
 
         tb_row.show_all()
-        #tb_frame.add(tb_row)
+        # tb_frame.add(tb_row)
 
         self.box.pack_start(tb_row, False, False, 0)
 
@@ -177,10 +233,37 @@ class MyWindow(Gtk.Window):
     def install_into_toolbox(self, toolbox: str, *args):
         file_to_install = self.show_file_chooser()
         if file_to_install:
-            subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, "sudo", "dnf", "install", "-y", file_to_install])
+            subprocess.run(
+                [
+                    terminal,
+                    terminal_exec_arg,
+                    "toolbox",
+                    "run",
+                    "-c",
+                    toolbox,
+                    "sudo",
+                    "dnf",
+                    "install",
+                    "-y",
+                    file_to_install,
+                ]
+            )
 
     def update_toolbox(self, toolbox, *args):
-        subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, "sudo", "dnf", "update", "-y"])
+        subprocess.run(
+            [
+                terminal,
+                terminal_exec_arg,
+                "toolbox",
+                "run",
+                "-c",
+                toolbox,
+                "sudo",
+                "dnf",
+                "update",
+                "-y",
+            ]
+        )
 
     def copy_desktop_to_host(self, toolbox: str, app: str):
         copy_desktop_from_toolbox_to_host(toolbox, app)
@@ -188,7 +271,9 @@ class MyWindow(Gtk.Window):
 
     def show_file_chooser(self):
         dialog = Gtk.FileChooserDialog(
-            title="Please choose a file to install", parent=self, action=Gtk.FileChooserAction.OPEN
+            title="Please choose a file to install",
+            parent=self,
+            action=Gtk.FileChooserAction.OPEN,
         )
         dialog.add_buttons(
             Gtk.STOCK_CANCEL,
@@ -219,10 +304,22 @@ class MyWindow(Gtk.Window):
             dialog.destroy()
 
         if cmd:
-            subprocess.run([terminal, terminal_exec_arg, "toolbox", "run", "-c", toolbox, *cmd.split(" ")])
+            subprocess.run(
+                [
+                    terminal,
+                    terminal_exec_arg,
+                    "toolbox",
+                    "run",
+                    "-c",
+                    toolbox,
+                    *cmd.split(" "),
+                ]
+            )
 
     def open_application_in_toolbox(self, toolbox: str, *args):
-        apps = get_output(["toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"])
+        apps = get_output(
+            ["toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"]
+        )
         apps = apps.replace("\r\n", " ")
         apps = apps.replace("\t", " ")
 
@@ -267,9 +364,7 @@ class MyWindow(Gtk.Window):
             text=f"Are you sure you want to delete {toolbox}?",
         )
 
-        dialog.format_secondary_text(
-            "This cannot be undone!"
-        )
+        dialog.format_secondary_text("This cannot be undone!")
 
         response = dialog.run()
 
@@ -280,17 +375,25 @@ class MyWindow(Gtk.Window):
         dialog.destroy()
 
     def view_toolbox_info(self, tb_id: str, toolbox: str):
-        cmd = f"podman ps -a -f id={tb_id}" + ' --format={{.ID}}||{{.Image}}||{{.Status}}||{{.CreatedAt}}'
+        cmd = (
+            f"podman ps -a -f id={tb_id}"
+            + " --format={{.ID}}||{{.Image}}||{{.Status}}||{{.CreatedAt}}"
+        )
         output = get_output(cmd.split(" "))
-        c_id, image, status, created_at  = output.split("||")
+        c_id, image, status, created_at = output.split("||")
 
-        info = {"container_id": c_id, "image": image, "status":status, "created_at": created_at.split('.')[0]}
+        info = {
+            "container_id": c_id,
+            "image": image,
+            "status": status,
+            "created_at": created_at.split(".")[0],
+        }
 
         d = InfoWindow(self, toolbox, info)
         d.run()
         d.destroy()
 
-    def stop_toolbox(self, toolbox:str):
+    def stop_toolbox(self, toolbox: str):
         subprocess.run(["podman", "stop", toolbox])
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 

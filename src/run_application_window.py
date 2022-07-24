@@ -5,6 +5,7 @@ from functools import partial
 from app import Gtk, GLib, GdkPixbuf
 from utils import set_icon_at_small_size
 
+
 class ImgFetchThread(threading.Thread):
     def __init__(self, master):
         super().__init__()
@@ -12,7 +13,7 @@ class ImgFetchThread(threading.Thread):
 
     def run(self):
         from utils import get_icon_from_desktop
-        
+
         for app in self.master.imgs.keys():
             icon = get_icon_from_desktop(self.master.toolbox, app)
             img = self.master.imgs[app]
@@ -33,14 +34,14 @@ class ImgFetchThread(threading.Thread):
 
 class RunApplicationWindow(Gtk.MessageDialog):
     def __init__(self, parent, toolbox, apps: list):
-        super().__init__(title=f"Run Application from {toolbox}", transient_for=parent, flags=0)
+        super().__init__(
+            title=f"Run Application from {toolbox}", transient_for=parent, flags=0
+        )
         self.apps = apps
         self.toolbox = toolbox
         self.parent = parent
 
-        self.add_buttons(
-              Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL
-        )
+        self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
 
         box = self.get_content_area()
 
@@ -97,7 +98,6 @@ class RunApplicationWindow(Gtk.MessageDialog):
             self.img_thread = ImgFetchThread(self)
             self.img_thread.start()
 
-
     def on_app_chosen(self, app: str, *args):
         self.chosen_app = app
         self.emit("response", Gtk.ResponseType.OK)
@@ -105,7 +105,6 @@ class RunApplicationWindow(Gtk.MessageDialog):
     def add_to_menu(self, app: str, *args):
         self.parent.copy_desktop_to_host(self.toolbox, app)
         self.format_secondary_text(f"{app} copied to host!")
-
 
     def set_chosen_app(self, app: str):
         self.chosen_app = app

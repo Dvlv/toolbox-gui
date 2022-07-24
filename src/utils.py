@@ -5,10 +5,12 @@ from functools import partial
 
 from app import Gtk, Gio, GdkPixbuf
 
+
 def get_output(cmd: str):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
     return proc.stdout.read().decode("utf-8")
+
 
 def create_toolbox_button(icon_name: str, tooltip: str, func):
     icon = Gtk.Image()
@@ -20,6 +22,7 @@ def create_toolbox_button(icon_name: str, tooltip: str, func):
     btn.get_style_context().add_class("tb_btn")
 
     return btn
+
 
 def set_icon_at_small_size(icon: str, img: Gtk.Image):
     thm = Gtk.IconTheme.get_default()
@@ -36,6 +39,7 @@ def set_icon_at_small_size(icon: str, img: Gtk.Image):
         img.set_from_icon_name(icon, Gtk.IconSize.BUTTON)
 
     return img
+
 
 def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
     popover = Gtk.Popover()
@@ -61,12 +65,14 @@ def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
 
     return btn
 
+
 def execute_delete_toolbox(toolbox: str):
     subprocess.run(["podman", "stop", toolbox])
     subprocess.run(["toolbox", "rm", toolbox])
 
+
 def fetch_all_toolboxes():
-    cmd = 'podman ps -a --format={{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}'
+    cmd = "podman ps -a --format={{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}"
     toolboxes = get_output(cmd.split(" "))
 
     toolboxes = toolboxes.split("\n")[:-1]
@@ -75,10 +81,11 @@ def fetch_all_toolboxes():
 
     for tb in toolboxes:
         name, image, status, tb_id = tb.split("||")
-        image_num = image.split(':')[-1]
+        image_num = image.split(":")[-1]
         retval.append((name, image_num, status, tb_id))
 
     return retval
+
 
 def launch_app(toolbox: str, app: str):
     # gtk-launch doesnt work from toolbox run :/
@@ -87,8 +94,11 @@ def launch_app(toolbox: str, app: str):
         cmd = app_exec_cmd.split(" ")
         subprocess.run(["toolbox", "run", "-c", toolbox, *cmd])
 
+
 def get_exec_from_desktop(toolbox: str, app: str):
-    contents = get_output(f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" "))
+    contents = get_output(
+        f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
+    )
     exec_cmd = None
     for line in contents.split("\n"):
         if line.startswith("Exec="):
@@ -99,7 +109,9 @@ def get_exec_from_desktop(toolbox: str, app: str):
 
 
 def get_icon_from_desktop(toolbox: str, app: str):
-    contents = get_output(f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" "))
+    contents = get_output(
+        f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
+    )
     icon = None
     for line in contents.split("\n"):
         if line.startswith("Icon="):
@@ -108,13 +120,24 @@ def get_icon_from_desktop(toolbox: str, app: str):
 
     return icon
 
+
 def copy_desktop_from_toolbox_to_host(toolbox: str, app: str):
     home = os.path.expanduser("~")
     local_folder = f"{home}/.local/share/applications"
     if not os.path.exists(local_folder):
         os.makedirs(local_folder)
 
-    subprocess.run(["toolbox", "run", "-c", toolbox, "cp", f"/usr/share/applications/{app}", f"{home}/.local/share/applications/{app}"])
+    subprocess.run(
+        [
+            "toolbox",
+            "run",
+            "-c",
+            toolbox,
+            "cp",
+            f"/usr/share/applications/{app}",
+            f"{home}/.local/share/applications/{app}",
+        ]
+    )
 
 
 def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
@@ -142,15 +165,16 @@ def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
 def is_dark_theme():
     try:
         out = subprocess.run(
-            ['gsettings', 'get', 'org.gnome.desktop.interface', 'color-scheme'],
-            capture_output=True)
+            ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
+            capture_output=True,
+        )
         stdout = out.stdout.decode()
     except:
         return False
 
     try:
         theme = stdout.lower().strip()[1:-1]
-        if '-dark' in theme.lower():
+        if "-dark" in theme.lower():
             return True
         else:
             return False
