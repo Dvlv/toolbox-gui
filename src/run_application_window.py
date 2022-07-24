@@ -16,6 +16,9 @@ class ImgFetchThread(threading.Thread):
 
         for app in self.master.imgs.keys():
             icon = get_icon_from_desktop(self.master.toolbox, app)
+            if not icon:
+                continue
+
             img = self.master.imgs[app]
             idx, spin = self.master.spinners[app]
 

@@ -23,6 +23,7 @@ from utils import (
     edit_exec_of_toolbox_desktop,
     is_dark_theme,
     copy_desktop_from_toolbox_to_host,
+    copy_icons_for_toolbox_desktop,
 )
 
 terminal = "gnome-terminal"
@@ -216,7 +217,7 @@ class MyWindow(Gtk.Window):
         self.toolbox_rows[toolbox] = tb_row
 
     def start_toolbox(self, toolbox: str):
-        subprocess.run([terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
+        subprocess.Popen([terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
     def edit_toolbox(self, toolbox: str):
@@ -250,7 +251,7 @@ class MyWindow(Gtk.Window):
             )
 
     def update_toolbox(self, toolbox, *args):
-        subprocess.run(
+        subprocess.Popen(
             [
                 terminal,
                 terminal_exec_arg,
@@ -267,7 +268,8 @@ class MyWindow(Gtk.Window):
 
     def copy_desktop_to_host(self, toolbox: str, app: str):
         copy_desktop_from_toolbox_to_host(toolbox, app)
-        GLib.timeout_add_seconds(1, edit_exec_of_toolbox_desktop, toolbox, app)
+        GLib.timeout_add_seconds(0.5, edit_exec_of_toolbox_desktop, toolbox, app)
+        GLib.timeout_add_seconds(0.75, copy_icons_for_toolbox_desktop, toolbox, app)
 
     def show_file_chooser(self):
         dialog = Gtk.FileChooserDialog(
@@ -304,7 +306,7 @@ class MyWindow(Gtk.Window):
             dialog.destroy()
 
         if cmd:
-            subprocess.run(
+            subprocess.Popen(
                 [
                     terminal,
                     terminal_exec_arg,

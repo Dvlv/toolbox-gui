@@ -12,6 +12,12 @@ def get_output(cmd: str):
     return proc.stdout.read().decode("utf-8")
 
 
+def get_stderr(cmd: str):
+    proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+
+    return proc.stderr.read().decode("utf-8")
+
+
 def create_toolbox_button(icon_name: str, tooltip: str, func):
     icon = Gtk.Image()
     set_icon_at_small_size(icon_name, icon)
@@ -92,7 +98,7 @@ def launch_app(toolbox: str, app: str):
     app_exec_cmd = get_exec_from_desktop(toolbox, app)
     if app_exec_cmd:
         cmd = app_exec_cmd.split(" ")
-        subprocess.run(["toolbox", "run", "-c", toolbox, *cmd])
+        subprocess.Popen(["toolbox", "run", "-c", toolbox, *cmd])
 
 
 def get_exec_from_desktop(toolbox: str, app: str):
@@ -160,6 +166,72 @@ def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
 
     with open(app_path, "w") as f:
         f.writelines(content)
+
+
+def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
+    home = os.path.expanduser("~")
+    app_path = f"{home}/.local/share/applications/{app}"
+    if not os.path.exists(app_path):
+        time.sleep(1)
+
+        if not os.path.exists(app_path):
+            # bail
+            print(1, app_path)
+            return
+
+    content = []
+    icon_name = ""
+    with open(app_path, "r") as f:
+        content = f.readlines()
+        for line in content:
+            if line.startswith("Icon="):
+                icon_name = line[5:]
+
+    if not icon_name:
+        print(2, icon_name)
+        return
+
+    if icon_name.endswith(".png") or icon_name.endswith(".svg"):
+        # is a file rather than a name
+        # try copying it over?
+        print(3, icon_name)
+        return
+
+    icon_name = icon_name.strip()
+
+    script_dir = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), "echo_into_file.sh"
+    )
+
+    cmd = ["toolbox", "run", "-c", toolbox, script_dir, icon_name]
+    subprocess.run(cmd)
+
+    if not os.path.exists(f"{home}/.icons/tb_gui_icon_files.txt"):
+        # bail
+        return
+
+    with open(f"{home}/.icons/tb_gui_icon_files.txt", "r") as f:
+        for line in f:
+            print(line)
+            line = line.strip()
+            dest_path = line.replace("/usr/share/icons", f"{home}/.icons")
+
+            if not os.path.exists(os.path.dirname(dest_path)):
+                os.makedirs(os.path.dirname(dest_path))
+
+            subprocess.run(
+                [
+                    "toolbox",
+                    "run",
+                    "-c",
+                    toolbox,
+                    "cp",
+                    line,
+                    dest_path,
+                ]
+            )
+
+    os.remove(f"{home}/.icons/tb_gui_icon_files.txt")
 
 
 def is_dark_theme():
