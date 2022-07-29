@@ -28,6 +28,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - [ ] Copied Icons re-appear large
 - [ ] Create ~/.icons if not exists
 - [ ] Use XDG dirs rather than hardcoding ~/.icons
+- [ ] Export / Import list of packages (for upgrading)
 - [ ] Icon
 - [ ] Flatpak - detect with `getenv ('FLATPAK_ID')` or `/.flatpak-info`
 - [x] Copy icons over when moving desktop file
