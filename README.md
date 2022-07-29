@@ -31,6 +31,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - [ ] Export / Import list of packages (for upgrading)
 - [ ] Icon
 - [ ] Flatpak - detect with `getenv ('FLATPAK_ID')` or `/.flatpak-info`
+- [ ] Dist Upgrades (sudo dnf update --releasever=36)
 - [x] Copy icons over when moving desktop file
 - [x] Icon size hack for the main window buttons (Kinoite)
 - [x] Check Kinoite
