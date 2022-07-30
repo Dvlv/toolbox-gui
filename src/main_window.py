@@ -17,6 +17,7 @@ from utils import (
     FLATPAK_SPAWN,
     FLATPAK_SPAWN_ARR,
     get_output,
+    get_stderr,
     create_toolbox_button,
     create_popover_button,
     execute_delete_toolbox,
@@ -36,7 +37,8 @@ if is_flatpak():
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
-if which(terminal) is None:
+err = get_stderr([*FLATPAK_SPAWN_ARR, "which", "gnome-terminal"])
+if err and err.startswith("/usr/bin/which"):
     terminal = "konsole"
     terminal_exec_arg = "-e"
 

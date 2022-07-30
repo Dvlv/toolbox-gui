@@ -40,7 +40,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 
 ## Flatpak TODO
 - [ ] Move icon detect script into `~/.var/app/$FLATPAK_ID` somewhere it can be read by a toolbox
-- [ ] Figure out how to detect Gnome vs KDE
+- [x] Figure out how to detect Gnome vs KDE
 
 
 ### Future Functionality

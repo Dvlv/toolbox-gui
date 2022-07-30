@@ -6,7 +6,7 @@ from functools import partial
 from app import Gtk, Gio, GdkPixbuf
 
 
-def get_output(cmd: str):
+def get_output(cmd: list):
     """
     Runs command and returns stdout
     """
@@ -15,7 +15,7 @@ def get_output(cmd: str):
     return proc.stdout.read().decode("utf-8")
 
 
-def get_stderr(cmd: str):
+def get_stderr(cmd: list):
     """
     Runs command and returns stderr
     """
