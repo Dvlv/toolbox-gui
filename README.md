@@ -22,18 +22,20 @@ A GUI manager for your toolboxes, made with Python and GTK.
 Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installation should come with the necessary python dependencies out-of-the-box.
 
 ## TODO
-- [ ] Docstrings
-- [ ] Message in create window if there are no existing toolboxes
-- [ ] Error message in create window if toolbox already exists with that name
-- [ ] Copied Icons re-appear large
-- [ ] Create ~/.icons if not exists
 - [ ] Use XDG dirs rather than hardcoding ~/.icons
-- [ ] Export / Import list of packages (for upgrading)
 - [ ] Icon
 - [ ] Flatpak - detect with `getenv ('FLATPAK_ID')` or `/.flatpak-info`
-- [ ] Dist Upgrades (sudo dnf update --releasever=36)
+- [x] Docstrings
 - [x] Copy icons over when moving desktop file
 - [x] Icon size hack for the main window buttons (Kinoite)
 - [x] Check Kinoite
 - [x] Initial download requires console use, look for -y flag in toolbox create
 - [x] Check and create ~/.local/share/applications if not exists
+- [x] Message in create window if there are no existing toolboxes
+- [x] Error message in create window if toolbox already exists with that name
+- [x] Create ~/.icons if not exists
+- [x] Copied Icons re-appear large
+
+### Future Functionality
+- [ ] Export / Import list of packages (for upgrading)
+- [ ] Dist Upgrades (sudo dnf update --releasever=36)

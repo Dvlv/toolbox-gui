@@ -7,18 +7,28 @@ from app import Gtk, Gio, GdkPixbuf
 
 
 def get_output(cmd: str):
+    """
+    Runs command and returns stdout
+    """
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
     return proc.stdout.read().decode("utf-8")
 
 
 def get_stderr(cmd: str):
+    """
+    Runs command and returns stderr
+    """
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     return proc.stderr.read().decode("utf-8")
 
 
 def create_toolbox_button(icon_name: str, tooltip: str, func):
+    """
+    Makes a button containing an icon which is bound to
+    the provided func
+    """
     icon = Gtk.Image()
     set_icon_at_small_size(icon_name, icon)
 
@@ -31,6 +41,9 @@ def create_toolbox_button(icon_name: str, tooltip: str, func):
 
 
 def set_icon_at_small_size(icon: str, img: Gtk.Image):
+    """
+    Uses pixbuf to set an icon at 16x16
+    """
     thm = Gtk.IconTheme.get_default()
     info = thm.lookup_icon(icon, 16, 0)
     set_from_pb = False
@@ -48,6 +61,9 @@ def set_icon_at_small_size(icon: str, img: Gtk.Image):
 
 
 def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
+    """
+    Makes a popover button containing an icon and the provided menu items
+    """
     popover = Gtk.Popover()
     vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
@@ -73,11 +89,17 @@ def create_popover_button(icon_name: str, tooltip: str, menu_items: dict):
 
 
 def execute_delete_toolbox(toolbox: str):
+    """
+    Stops and removes toolbox
+    """
     subprocess.run(["podman", "stop", toolbox])
     subprocess.run(["toolbox", "rm", toolbox])
 
 
 def fetch_all_toolboxes():
+    """
+    Returns info about all toolboxes
+    """
     cmd = "podman ps -a --format={{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}"
     toolboxes = get_output(cmd.split(" "))
 
@@ -93,7 +115,27 @@ def fetch_all_toolboxes():
     return retval
 
 
+def fetch_all_toolbox_names():
+    """
+    Returns names of all toolboxes
+    """
+    cmd = "podman ps -a --format={{.Names}}"
+    toolboxes = get_output(cmd.split(" "))
+
+    toolboxes = toolboxes.split("\n")[:-1]
+
+    retval = []
+
+    for tb in toolboxes:
+        retval.append(tb)
+
+    return retval
+
+
 def launch_app(toolbox: str, app: str):
+    """
+    Opens provided app in the toolbox
+    """
     # gtk-launch doesnt work from toolbox run :/
     app_exec_cmd = get_exec_from_desktop(toolbox, app)
     if app_exec_cmd:
@@ -102,6 +144,9 @@ def launch_app(toolbox: str, app: str):
 
 
 def get_exec_from_desktop(toolbox: str, app: str):
+    """
+    Returns the Exec= line from a .desktop file
+    """
     contents = get_output(
         f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
     )
@@ -115,6 +160,9 @@ def get_exec_from_desktop(toolbox: str, app: str):
 
 
 def get_icon_from_desktop(toolbox: str, app: str):
+    """
+    Returns the Icon= line from a .desktop file
+    """
     contents = get_output(
         f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
     )
@@ -128,6 +176,9 @@ def get_icon_from_desktop(toolbox: str, app: str):
 
 
 def copy_desktop_from_toolbox_to_host(toolbox: str, app: str):
+    """
+    Copies .desktop file from toolbox into host
+    """
     home = os.path.expanduser("~")
     local_folder = f"{home}/.local/share/applications"
     if not os.path.exists(local_folder):
@@ -147,6 +198,9 @@ def copy_desktop_from_toolbox_to_host(toolbox: str, app: str):
 
 
 def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
+    """
+    Replaces Exec= line from a .desktop file to include the toolbox run
+    """
     home = os.path.expanduser("~")
     app_path = f"{home}/.local/share/applications/{app}"
     if not os.path.exists(app_path):
@@ -169,6 +223,10 @@ def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
 
 
 def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
+    """
+    Searches for icons matching the app name inside the toolbox and
+    copies them to ~/.icons on the host
+    """
     home = os.path.expanduser("~")
     app_path = f"{home}/.local/share/applications/{app}"
     if not os.path.exists(app_path):
@@ -176,7 +234,6 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
 
         if not os.path.exists(app_path):
             # bail
-            print(1, app_path)
             return
 
     content = []
@@ -188,16 +245,17 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
                 icon_name = line[5:]
 
     if not icon_name:
-        print(2, icon_name)
         return
 
     if icon_name.endswith(".png") or icon_name.endswith(".svg"):
         # is a file rather than a name
         # try copying it over?
-        print(3, icon_name)
         return
 
     icon_name = icon_name.strip()
+
+    if not os.path.exists(f"{home}/.icons"):
+        os.makedirs(f"{home}/.icons")
 
     script_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), "echo_into_file.sh"
@@ -235,6 +293,9 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
 
 
 def is_dark_theme():
+    """
+    Tries to find if the user has set themselves to dark mode
+    """
     try:
         out = subprocess.run(
             ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],

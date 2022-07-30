@@ -67,7 +67,7 @@ class RunApplicationWindow(Gtk.MessageDialog):
             img = Gtk.Image()
             img.get_style_context().add_class("app_icon")
             if app in self.parent.icon_cache:
-                img.set_from_icon_name(self.parent.icon_cache[app], Gtk.IconSize.BUTTON)
+                set_icon_at_small_size(self.parent.icon_cache[app], img)
                 grid.attach(img, 1, idx, 1, 1)
             else:
                 self.imgs[app] = img

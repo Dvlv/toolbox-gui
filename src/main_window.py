@@ -19,6 +19,7 @@ from utils import (
     create_popover_button,
     execute_delete_toolbox,
     fetch_all_toolboxes,
+    fetch_all_toolbox_names,
     launch_app,
     edit_exec_of_toolbox_desktop,
     is_dark_theme,
@@ -63,6 +64,9 @@ class MyWindow(Gtk.Window):
         self.box.show_all()
 
     def apply_css(self):
+        """
+        Applies CSS and sets dark theme
+        """
         css = self.get_css()
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(css)
@@ -76,6 +80,9 @@ class MyWindow(Gtk.Window):
         settings.set_property("gtk-application-prefer-dark-theme", is_dark_theme())
 
     def get_css(self):
+        """
+        CSS for the application
+        """
         primary = "white"
         primary2 = "#efefef"
 
@@ -99,6 +106,9 @@ class MyWindow(Gtk.Window):
         return css.encode()
 
     def init_header_bar(self):
+        """
+        Sets Header / Title bar at top, containing add button
+        """
         header = Gtk.HeaderBar()
         header.set_title("Toolbox GUI")
         header.set_show_close_button(True)
@@ -116,6 +126,9 @@ class MyWindow(Gtk.Window):
         self.set_titlebar(header)
 
     def render_all_toolboxes(self):
+        """
+        Clears window and renders each row for each toolbox
+        """
         self.clear_main_box()
 
         toolboxes = fetch_all_toolboxes()
@@ -126,10 +139,16 @@ class MyWindow(Gtk.Window):
         self.box.show_all()
 
     def clear_main_box(self):
+        """
+        Removes all children from the main window
+        """
         for child in self.box.get_children():
             self.box.remove(child)
 
     def render_toolbox_row(self, toolbox_info):
+        """
+        Renders a row for each toolbox, containing the name and buttons
+        """
         tb_row = Gtk.Box(spacing=10)
         tb_row.get_style_context().add_class("tb_row")
 
@@ -217,10 +236,16 @@ class MyWindow(Gtk.Window):
         self.toolbox_rows[toolbox] = tb_row
 
     def start_toolbox(self, toolbox: str):
+        """
+        Opens a terminal in a toolbox
+        """
         subprocess.Popen([terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
     def edit_toolbox(self, toolbox: str):
+        """
+        Opens popup to rename a toolbox
+        """
         d = EditWindow(self, toolbox)
         response = d.run()
         new_name = d.get_entered_name()
@@ -232,6 +257,9 @@ class MyWindow(Gtk.Window):
         self.render_all_toolboxes()
 
     def install_into_toolbox(self, toolbox: str, *args):
+        """
+        Passes typed information into ``dnf install`` inside the toolbox
+        """
         file_to_install = self.show_file_chooser()
         if file_to_install:
             subprocess.run(
@@ -251,6 +279,9 @@ class MyWindow(Gtk.Window):
             )
 
     def update_toolbox(self, toolbox, *args):
+        """
+        Runs ``dnf update`` inside toolbox
+        """
         subprocess.Popen(
             [
                 terminal,
@@ -266,36 +297,10 @@ class MyWindow(Gtk.Window):
             ]
         )
 
-    def copy_desktop_to_host(self, toolbox: str, app: str):
-        copy_desktop_from_toolbox_to_host(toolbox, app)
-        GLib.timeout_add_seconds(0.5, edit_exec_of_toolbox_desktop, toolbox, app)
-        GLib.timeout_add_seconds(0.75, copy_icons_for_toolbox_desktop, toolbox, app)
-
-    def show_file_chooser(self):
-        dialog = Gtk.FileChooserDialog(
-            title="Please choose a file to install",
-            parent=self,
-            action=Gtk.FileChooserAction.OPEN,
-        )
-        dialog.add_buttons(
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN,
-            Gtk.ResponseType.OK,
-        )
-
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            rpm_name = dialog.get_filename()
-            dialog.destroy()
-
-            return rpm_name
-        elif response == Gtk.ResponseType.CANCEL:
-            dialog.destroy()
-
-        return None
-
     def run_from_toolbox(self, toolbox: str, *args):
+        """
+        Runs command inside a toolbox
+        """
         dialog = RunSoftwareWindow(self, toolbox)
         response = dialog.run()
         cmd = None
@@ -319,6 +324,10 @@ class MyWindow(Gtk.Window):
             )
 
     def open_application_in_toolbox(self, toolbox: str, *args):
+        """
+        Opens a dialog containing the applications inside the toolbox,
+        then runs one if selected
+        """
         apps = get_output(
             ["toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"]
         )
@@ -339,25 +348,42 @@ class MyWindow(Gtk.Window):
             GLib.timeout_add_seconds(0.5, launch_app, toolbox, chosen_app)
 
     def create_new_toolbox(self):
-        d = ToolboxNameWindow(self)
+        """
+        Shows a dialog to fetch a name, then makes a toolbox with that name.
+        """
+        all_toolboxes = fetch_all_toolbox_names()
+
+        d = ToolboxNameWindow(self, all_toolboxes)
         response = d.run()
         tb_name = None
         if response == Gtk.ResponseType.OK:
             tb_name = d.get_entered_name()
 
+            while tb_name in all_toolboxes:
+                d.show_already_exists_message()
+                tb_name = None
+                response = d.run()
+
+                if response == Gtk.ResponseType.OK:
+                    tb_name = d.get_entered_name()
+
+            if tb_name:
+                subprocess.run(["toolbox", "create", tb_name, "-y"])
+
+                current_w, current_h = self.get_size()
+                min_h = 75 * (len(self.toolbox_rows) + 1)
+                if current_h < min_h and current_h < 900:
+                    self.resize(current_w, min_h)
+
+            self.render_all_toolboxes()
+
         d.destroy()
 
-        if tb_name:
-            subprocess.run(["toolbox", "create", tb_name, "-y"])
-
-        current_w, current_h = self.get_size()
-        min_h = 75 * (len(self.toolbox_rows) + 1)
-        if current_h < min_h and current_h < 900:
-            self.resize(current_w, min_h)
-
-        self.render_all_toolboxes()
-
     def confirm_delete_toolbox(self, toolbox: str):
+        """
+        Shows a dialog to confirm deleting of a toolbox
+        Then deletes it if confirmed
+        """
         dialog = Gtk.MessageDialog(
             transient_for=self,
             flags=0,
@@ -377,6 +403,9 @@ class MyWindow(Gtk.Window):
         dialog.destroy()
 
     def view_toolbox_info(self, tb_id: str, toolbox: str):
+        """
+        Shows dialog with information about a toolbox
+        """
         cmd = (
             f"podman ps -a -f id={tb_id}"
             + " --format={{.ID}}||{{.Image}}||{{.Status}}||{{.CreatedAt}}"
@@ -396,8 +425,50 @@ class MyWindow(Gtk.Window):
         d.destroy()
 
     def stop_toolbox(self, toolbox: str):
+        """
+        Runs podman stop
+        """
         subprocess.run(["podman", "stop", toolbox])
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
+    def copy_desktop_to_host(self, toolbox: str, app: str):
+        """
+        Kicks off copying of .desktop file to the host
+        """
+        copy_desktop_from_toolbox_to_host(toolbox, app)
+        GLib.timeout_add_seconds(0.5, edit_exec_of_toolbox_desktop, toolbox, app)
+        GLib.timeout_add_seconds(0.75, copy_icons_for_toolbox_desktop, toolbox, app)
+
+    def show_file_chooser(self):
+        """
+        Shows a file chooser dialog to pick an RPM file to install
+        """
+        dialog = Gtk.FileChooserDialog(
+            title="Please choose a file to install",
+            parent=self,
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            rpm_name = dialog.get_filename()
+            dialog.destroy()
+
+            return rpm_name
+        elif response == Gtk.ResponseType.CANCEL:
+            dialog.destroy()
+
+        return None
+
     def delayed_rerender(self, *args):
+        """
+        Used to rerender the rows after a delay
+        """
+
         self.render_all_toolboxes()
