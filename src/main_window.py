@@ -14,6 +14,8 @@ from toolbox_name_window import ToolboxNameWindow
 
 from app import Gtk, GLib, Gdk
 from utils import (
+    FLATPAK_SPAWN,
+    FLATPAK_SPAWN_ARR,
     get_output,
     create_toolbox_button,
     create_popover_button,
@@ -23,9 +25,14 @@ from utils import (
     launch_app,
     edit_exec_of_toolbox_desktop,
     is_dark_theme,
+    is_flatpak,
     copy_desktop_from_toolbox_to_host,
     copy_icons_for_toolbox_desktop,
 )
+
+fp_spawn = []
+if is_flatpak():
+    fp_spawn = ["flatpak", "spawn", "--host"]
 
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
@@ -239,7 +246,7 @@ class MyWindow(Gtk.Window):
         """
         Opens a terminal in a toolbox
         """
-        subprocess.Popen([terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
+        subprocess.Popen([*FLATPAK_SPAWN_ARR, terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
     def edit_toolbox(self, toolbox: str):
@@ -250,7 +257,7 @@ class MyWindow(Gtk.Window):
         response = d.run()
         new_name = d.get_entered_name()
         if new_name and new_name != toolbox:
-            subprocess.run(["podman", "rename", toolbox, new_name])
+            subprocess.run([*FLATPAK_SPAWN_ARR, "podman", "rename", toolbox, new_name])
 
         d.destroy()
 
@@ -264,6 +271,7 @@ class MyWindow(Gtk.Window):
         if file_to_install:
             subprocess.run(
                 [
+                    *FLATPAK_SPAWN_ARR,
                     terminal,
                     terminal_exec_arg,
                     "toolbox",
@@ -284,6 +292,7 @@ class MyWindow(Gtk.Window):
         """
         subprocess.Popen(
             [
+                    *FLATPAK_SPAWN_ARR,
                 terminal,
                 terminal_exec_arg,
                 "toolbox",
@@ -313,6 +322,7 @@ class MyWindow(Gtk.Window):
         if cmd:
             subprocess.Popen(
                 [
+                    *FLATPAK_SPAWN_ARR,
                     terminal,
                     terminal_exec_arg,
                     "toolbox",
@@ -329,7 +339,7 @@ class MyWindow(Gtk.Window):
         then runs one if selected
         """
         apps = get_output(
-            ["toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"]
+            [*FLATPAK_SPAWN_ARR, "toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"]
         )
         apps = apps.replace("\r\n", " ")
         apps = apps.replace("\t", " ")
@@ -368,7 +378,7 @@ class MyWindow(Gtk.Window):
                     tb_name = d.get_entered_name()
 
             if tb_name:
-                subprocess.run(["toolbox", "create", tb_name, "-y"])
+                subprocess.run([*FLATPAK_SPAWN_ARR, "toolbox", "create", tb_name, "-y"])
 
                 current_w, current_h = self.get_size()
                 min_h = 75 * (len(self.toolbox_rows) + 1)
@@ -407,7 +417,7 @@ class MyWindow(Gtk.Window):
         Shows dialog with information about a toolbox
         """
         cmd = (
-            f"podman ps -a -f id={tb_id}"
+            f"{FLATPAK_SPAWN}podman ps -a -f id={tb_id}"
             + " --format={{.ID}}||{{.Image}}||{{.Status}}||{{.CreatedAt}}"
         )
         output = get_output(cmd.split(" "))
@@ -428,7 +438,7 @@ class MyWindow(Gtk.Window):
         """
         Runs podman stop
         """
-        subprocess.run(["podman", "stop", toolbox])
+        subprocess.run([*FLATPAK_SPAWN_ARR, "podman", "stop", toolbox])
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
     def copy_desktop_to_host(self, toolbox: str, app: str):

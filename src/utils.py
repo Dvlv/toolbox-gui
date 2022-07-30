@@ -92,15 +92,16 @@ def execute_delete_toolbox(toolbox: str):
     """
     Stops and removes toolbox
     """
-    subprocess.run(["podman", "stop", toolbox])
-    subprocess.run(["toolbox", "rm", toolbox])
+    subprocess.run([*FLATPAK_SPAWN_ARR, "podman", "stop", toolbox])
+    subprocess.run([*FLATPAK_SPAWN_ARR, "toolbox", "rm", toolbox])
 
 
 def fetch_all_toolboxes():
     """
     Returns info about all toolboxes
     """
-    cmd = "podman ps -a --format={{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}"
+    cmd = f"{FLATPAK_SPAWN}podman ps -a --format=" + "{{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}"
+
     toolboxes = get_output(cmd.split(" "))
 
     toolboxes = toolboxes.split("\n")[:-1]
@@ -119,7 +120,7 @@ def fetch_all_toolbox_names():
     """
     Returns names of all toolboxes
     """
-    cmd = "podman ps -a --format={{.Names}}"
+    cmd = f"{FLATPAK_SPAWN}podman ps -a --format=" + "{{.Names}}"
     toolboxes = get_output(cmd.split(" "))
 
     toolboxes = toolboxes.split("\n")[:-1]
@@ -140,7 +141,7 @@ def launch_app(toolbox: str, app: str):
     app_exec_cmd = get_exec_from_desktop(toolbox, app)
     if app_exec_cmd:
         cmd = app_exec_cmd.split(" ")
-        subprocess.Popen(["toolbox", "run", "-c", toolbox, *cmd])
+        subprocess.Popen([*FLATPAK_SPAWN_ARR, "toolbox", "run", "-c", toolbox, *cmd])
 
 
 def get_exec_from_desktop(toolbox: str, app: str):
@@ -148,7 +149,7 @@ def get_exec_from_desktop(toolbox: str, app: str):
     Returns the Exec= line from a .desktop file
     """
     contents = get_output(
-        f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
+        f"{FLATPAK_SPAWN}toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
     )
     exec_cmd = None
     for line in contents.split("\n"):
@@ -164,7 +165,7 @@ def get_icon_from_desktop(toolbox: str, app: str):
     Returns the Icon= line from a .desktop file
     """
     contents = get_output(
-        f"toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
+        f"{FLATPAK_SPAWN}toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
     )
     icon = None
     for line in contents.split("\n"):
@@ -186,6 +187,7 @@ def copy_desktop_from_toolbox_to_host(toolbox: str, app: str):
 
     subprocess.run(
         [
+            *FLATPAK_SPAWN_ARR,
             "toolbox",
             "run",
             "-c",
@@ -261,7 +263,7 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
         os.path.abspath(os.path.dirname(__file__)), "echo_into_file.sh"
     )
 
-    cmd = ["toolbox", "run", "-c", toolbox, script_dir, icon_name]
+    cmd = [*FLATPAK_SPAWN_ARR, "toolbox", "run", "-c", toolbox, script_dir, icon_name]
     subprocess.run(cmd)
 
     if not os.path.exists(f"{home}/.icons/tb_gui_icon_files.txt"):
@@ -279,6 +281,7 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
 
             subprocess.run(
                 [
+                    *FLATPAK_SPAWN_ARR,
                     "toolbox",
                     "run",
                     "-c",
@@ -298,7 +301,7 @@ def is_dark_theme():
     """
     try:
         out = subprocess.run(
-            ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
+            [*FLATPAK_SPAWN_ARR, "gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
             capture_output=True,
         )
         stdout = out.stdout.decode()
@@ -313,3 +316,12 @@ def is_dark_theme():
             return False
     except IndexError:
         return False
+
+def is_flatpak():
+    f = os.getenv("FLATPAK_ID")
+    if f:
+        return True
+    return False
+
+FLATPAK_SPAWN = "flatpak-spawn --host " if is_flatpak() else ""
+FLATPAK_SPAWN_ARR = ["flatpak-spawn", "--host"] if is_flatpak() else []

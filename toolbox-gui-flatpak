@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+export PYTHONPATH=/app
+python3 /app/src/app.py

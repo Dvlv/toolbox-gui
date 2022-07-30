@@ -1,0 +1,23 @@
+app-id: co.uk.dvlv.toolbox-gui
+runtime: org.gnome.Platform
+runtime-version: '42'
+sdk: org.gnome.Sdk
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=session-bus
+  - --filesystem=xdg-data
+  - --filesystem=~/.icons
+command: toolbox-gui
+modules:
+  - name: runner
+    buildsystem: simple
+    build-commands:
+      - install -D toolbox-gui-flatpak /app/bin/toolbox-gui
+      - cp -r src /app/src
+    sources:
+      - type: file
+        path: toolbox-gui-flatpak
+      - type: dir
+        path: src
+        dest: src

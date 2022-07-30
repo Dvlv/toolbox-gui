@@ -21,10 +21,12 @@ A GUI manager for your toolboxes, made with Python and GTK.
 ## Running
 Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installation should come with the necessary python dependencies out-of-the-box.
 
+## Flatpak (Work In Progress!)
+- `flatpak-builder --user --install --force-clean build-dir co.uk.dvlv.toolbox-gui.yml`
+- `flatpak run co.uk.dvlv.toolbox-gui`
+
 ## TODO
-- [ ] Use XDG dirs rather than hardcoding ~/.icons
 - [ ] Icon
-- [ ] Flatpak - detect with `getenv ('FLATPAK_ID')` or `/.flatpak-info`
 - [x] Docstrings
 - [x] Copy icons over when moving desktop file
 - [x] Icon size hack for the main window buttons (Kinoite)
@@ -35,6 +37,11 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - [x] Error message in create window if toolbox already exists with that name
 - [x] Create ~/.icons if not exists
 - [x] Copied Icons re-appear large
+
+## Flatpak TODO
+- [ ] Move icon detect script into `~/.var/app/$FLATPAK_ID` somewhere it can be read by a toolbox
+- [ ] Figure out how to detect Gnome vs KDE
+
 
 ### Future Functionality
 - [ ] Export / Import list of packages (for upgrading)
