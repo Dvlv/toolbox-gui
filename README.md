@@ -39,7 +39,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - [x] Copied Icons re-appear large
 
 ## Flatpak TODO
-- [ ] Move icon detect script into `~/.var/app/$FLATPAK_ID` somewhere it can be read by a toolbox
+- [x] Move icon detect script into `~/.var/app/$FLATPAK_ID` somewhere it can be read by a toolbox
 - [x] Figure out how to detect Gnome vs KDE
 
 

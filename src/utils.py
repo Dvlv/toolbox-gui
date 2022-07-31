@@ -1,6 +1,7 @@
 import time
 import os
 import subprocess
+import shutil
 from functools import partial
 
 from app import Gtk, Gio, GdkPixbuf
@@ -100,7 +101,10 @@ def fetch_all_toolboxes():
     """
     Returns info about all toolboxes
     """
-    cmd = f"{FLATPAK_SPAWN}podman ps -a --format=" + "{{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}"
+    cmd = (
+        f"{FLATPAK_SPAWN}podman ps -a --format="
+        + "{{.Names}}||{{.Image}}||{{.Status}}||{{.ID}}"
+    )
 
     toolboxes = get_output(cmd.split(" "))
 
@@ -149,7 +153,9 @@ def get_exec_from_desktop(toolbox: str, app: str):
     Returns the Exec= line from a .desktop file
     """
     contents = get_output(
-        f"{FLATPAK_SPAWN}toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
+        f"{FLATPAK_SPAWN}toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(
+            " "
+        )
     )
     exec_cmd = None
     for line in contents.split("\n"):
@@ -165,7 +171,9 @@ def get_icon_from_desktop(toolbox: str, app: str):
     Returns the Icon= line from a .desktop file
     """
     contents = get_output(
-        f"{FLATPAK_SPAWN}toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(" ")
+        f"{FLATPAK_SPAWN}toolbox run -c {toolbox} cat /usr/share/applications/{app}".split(
+            " "
+        )
     )
     icon = None
     for line in contents.split("\n"):
@@ -217,7 +225,6 @@ def edit_exec_of_toolbox_desktop(toolbox: str, app: str):
         content = f.readlines()
         for idx, line in enumerate(content):
             if line.startswith("Exec="):
-                print("found exec")
                 content[idx] = line.replace("Exec=", f"Exec=toolbox run -c {toolbox} ")
 
     with open(app_path, "w") as f:
@@ -259,20 +266,39 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
     if not os.path.exists(f"{home}/.icons"):
         os.makedirs(f"{home}/.icons")
 
+    data_path = f"{home}/.icons"
     script_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), "echo_into_file.sh"
     )
+    if is_flatpak():
+        data_path = os.getenv("XDG_DATA_HOME")
 
-    cmd = [*FLATPAK_SPAWN_ARR, "toolbox", "run", "-c", toolbox, script_dir, icon_name]
+        fp_script_path = os.path.join(os.getenv("XDG_DATA_HOME"), "echo_into_file.sh")
+        shutil.copyfile(script_dir, fp_script_path)
+        os.chmod(fp_script_path, 0o0744)
+
+        script_dir = fp_script_path
+
+    icon_results_file = f"{data_path}/tb_gui_icon_files.txt"
+
+    cmd = [
+        *FLATPAK_SPAWN_ARR,
+        "toolbox",
+        "run",
+        "-c",
+        toolbox,
+        script_dir,
+        icon_name,
+        data_path,
+    ]
     subprocess.run(cmd)
 
-    if not os.path.exists(f"{home}/.icons/tb_gui_icon_files.txt"):
+    if not os.path.exists(icon_results_file):
         # bail
         return
 
-    with open(f"{home}/.icons/tb_gui_icon_files.txt", "r") as f:
+    with open(icon_results_file, "r") as f:
         for line in f:
-            print(line)
             line = line.strip()
             dest_path = line.replace("/usr/share/icons", f"{home}/.icons")
 
@@ -292,7 +318,7 @@ def copy_icons_for_toolbox_desktop(toolbox: str, app: str):
                 ]
             )
 
-    os.remove(f"{home}/.icons/tb_gui_icon_files.txt")
+    os.remove(icon_results_file)
 
 
 def is_dark_theme():
@@ -301,7 +327,13 @@ def is_dark_theme():
     """
     try:
         out = subprocess.run(
-            [*FLATPAK_SPAWN_ARR, "gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
+            [
+                *FLATPAK_SPAWN_ARR,
+                "gsettings",
+                "get",
+                "org.gnome.desktop.interface",
+                "color-scheme",
+            ],
             capture_output=True,
         )
         stdout = out.stdout.decode()
@@ -317,11 +349,13 @@ def is_dark_theme():
     except IndexError:
         return False
 
+
 def is_flatpak():
     f = os.getenv("FLATPAK_ID")
     if f:
         return True
     return False
+
 
 FLATPAK_SPAWN = "flatpak-spawn --host " if is_flatpak() else ""
 FLATPAK_SPAWN_ARR = ["flatpak-spawn", "--host"] if is_flatpak() else []

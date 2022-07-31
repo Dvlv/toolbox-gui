@@ -24,13 +24,20 @@ modules:
     sources:
       - type: file
         path: co.uk.dvlv.toolbox-gui.desktop
+
       - type: file
         path: icons/co.uk.dvlv.toolbox-gui.png
+        
+      - type: file
+        path: src/echo_into_file.sh
+        
       - type: file
         path: toolbox-gui-flatpak
+
       - type: dir
         path: icons
         dest: icons
+
       - type: dir
         path: src
         dest: src

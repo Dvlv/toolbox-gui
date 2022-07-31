@@ -248,7 +248,16 @@ class MyWindow(Gtk.Window):
         """
         Opens a terminal in a toolbox
         """
-        subprocess.Popen([*FLATPAK_SPAWN_ARR, terminal, terminal_exec_arg, "toolbox", "enter", toolbox])
+        subprocess.Popen(
+            [
+                *FLATPAK_SPAWN_ARR,
+                terminal,
+                terminal_exec_arg,
+                "toolbox",
+                "enter",
+                toolbox,
+            ]
+        )
         GLib.timeout_add_seconds(1, self.delayed_rerender)
 
     def edit_toolbox(self, toolbox: str):
@@ -294,7 +303,7 @@ class MyWindow(Gtk.Window):
         """
         subprocess.Popen(
             [
-                    *FLATPAK_SPAWN_ARR,
+                *FLATPAK_SPAWN_ARR,
                 terminal,
                 terminal_exec_arg,
                 "toolbox",
@@ -341,7 +350,15 @@ class MyWindow(Gtk.Window):
         then runs one if selected
         """
         apps = get_output(
-            [*FLATPAK_SPAWN_ARR, "toolbox", "run", "-c", toolbox, "ls", "/usr/share/applications"]
+            [
+                *FLATPAK_SPAWN_ARR,
+                "toolbox",
+                "run",
+                "-c",
+                toolbox,
+                "ls",
+                "/usr/share/applications",
+            ]
         )
         apps = apps.replace("\r\n", " ")
         apps = apps.replace("\t", " ")
