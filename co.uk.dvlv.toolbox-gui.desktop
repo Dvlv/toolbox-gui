@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Toolbox GUI
+Exec=toolbox-gui
+Type=Application
+Icon=co.uk.dvlv.toolbox-gui

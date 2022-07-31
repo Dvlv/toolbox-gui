@@ -15,9 +15,22 @@ modules:
     build-commands:
       - install -D toolbox-gui-flatpak /app/bin/toolbox-gui
       - cp -r src /app/src
+
+      - mkdir -p /app/share/applications
+      - install -D co.uk.dvlv.toolbox-gui.desktop /app/share/applications/
+
+      - mkdir -p /app/share/icons/hicolor/128x128/apps
+      - install -D icons/co.uk.dvlv.toolbox-gui.png /app/share/icons/hicolor/128x128/apps
     sources:
       - type: file
+        path: co.uk.dvlv.toolbox-gui.desktop
+      - type: file
+        path: icons/co.uk.dvlv.toolbox-gui.png
+      - type: file
         path: toolbox-gui-flatpak
+      - type: dir
+        path: icons
+        dest: icons
       - type: dir
         path: src
         dest: src
