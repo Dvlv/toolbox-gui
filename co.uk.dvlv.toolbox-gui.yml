@@ -26,7 +26,7 @@ modules:
         path: co.uk.dvlv.toolbox-gui.desktop
 
       - type: file
-        path: icons/co.uk.dvlv.toolbox-gui.png
+        path: icons/co.uk.dvlv.toolbox-gui.svg
         
       - type: file
         path: src/echo_into_file.sh
