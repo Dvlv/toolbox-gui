@@ -18,12 +18,19 @@ A GUI manager for your toolboxes, made with Python and GTK.
 
 (Icons may differ based on your icon theme)
 
-## Running
-Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installation should come with the necessary python dependencies out-of-the-box.
+## Flatpak
+Clone or download this repo, `cd` into the folder, then install like so:
 
-## Flatpak (Work In Progress!)
+### From Binary
+- `flatpak install --user toolbox-gui.flatpak`
+
+### Build From Source
+- Install `flatpak-builder` (probably in a Toolbox)
 - `flatpak-builder --user --install --force-clean build-dir co.uk.dvlv.toolbox-gui.yml`
 - `flatpak run co.uk.dvlv.toolbox-gui`
+
+## Running (Standalone script)
+Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installation should come with the necessary python dependencies out-of-the-box.
 
 ## TODO
 - [ ] Check Kinoite
