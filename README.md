@@ -26,11 +26,11 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - `flatpak run co.uk.dvlv.toolbox-gui`
 
 ## TODO
-- [ ] Icon
+- [ ] Check Kinoite
+- [x] Icon
 - [x] Docstrings
 - [x] Copy icons over when moving desktop file
 - [x] Icon size hack for the main window buttons (Kinoite)
-- [x] Check Kinoite
 - [x] Initial download requires console use, look for -y flag in toolbox create
 - [x] Check and create ~/.local/share/applications if not exists
 - [x] Message in create window if there are no existing toolboxes
@@ -44,5 +44,7 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 
 
 ### Future Functionality
+- [ ] Help Page
+- [ ] About Page
 - [ ] Export / Import list of packages (for upgrading)
 - [ ] Dist Upgrades (sudo dnf update --releasever=36)
