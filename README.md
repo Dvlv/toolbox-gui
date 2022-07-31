@@ -27,7 +27,6 @@ Clone or download this repo, `cd` into the folder, then install like so:
 ### Build From Source
 - Install `flatpak-builder` (probably in a Toolbox)
 - `flatpak-builder --user --install --force-clean build-dir co.uk.dvlv.toolbox-gui.yml`
-- `flatpak run co.uk.dvlv.toolbox-gui`
 
 ## Running (Standalone script)
 Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installation should come with the necessary python dependencies out-of-the-box.
