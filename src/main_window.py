@@ -38,7 +38,7 @@ if is_flatpak():
 terminal = "gnome-terminal"
 terminal_exec_arg = "--"
 err = get_stderr([*FLATPAK_SPAWN_ARR, "which", "gnome-terminal"])
-if err and err.startswith("/usr/bin/which"):
+if err:
     terminal = "konsole"
     terminal_exec_arg = "-e"
 
