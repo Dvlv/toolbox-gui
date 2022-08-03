@@ -13,7 +13,7 @@ modules:
   - name: runner
     buildsystem: simple
     build-commands:
-      - install -D toolbox-gui-flatpak /app/bin/toolbox-gui
+      - install -D toolbox-gui-fp /app/bin/toolbox-gui
       - cp -r src /app/src
 
       - mkdir -p /app/share/applications
@@ -32,7 +32,7 @@ modules:
         path: src/echo_into_file.sh
         
       - type: file
-        path: toolbox-gui-flatpak
+        path: toolbox-gui-fp
 
       - type: dir
         path: icons
