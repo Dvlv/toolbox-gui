@@ -33,8 +33,6 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 
 ## TODO
 - [ ] Icon PNGs
-- [ ] Desktop file more detail
-- [ ] Appdata.xml
 
 
 ### Future Functionality
