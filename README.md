@@ -36,8 +36,5 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 
 
 ### Future Functionality
-- [ ] Refresh Button
-- [ ] Help Page
-- [ ] About Page
 - [ ] Export / Import list of packages (for upgrading)
 - [ ] Dist Upgrades (sudo dnf update --releasever=36)
