@@ -6,7 +6,9 @@ from functools import partial
 from shutil import which
 
 
+from about_window import AboutWindow
 from edit_window import EditWindow
+from help_window import HelpWindow
 from info_window import InfoWindow
 from run_application_window import RunApplicationWindow
 from run_software_window import RunSoftwareWindow
@@ -130,6 +132,15 @@ class MyWindow(Gtk.Window):
         new_btn.set_tooltip_text("Create a New Toolbox")
         new_btn.get_style_context().add_class("add_btn")
 
+        menu_items = {
+            "Refresh": partial(self.delayed_rerender),
+            "Help": partial(self.show_help_window),
+            "About": partial(self.show_about_window),
+        }
+
+        menu_btn = create_popover_button("open-menu-symbolic", "Open Menu", menu_items)
+
+        header.pack_start(menu_btn)
         header.pack_end(new_btn)
 
         self.set_titlebar(header)
@@ -494,6 +505,16 @@ class MyWindow(Gtk.Window):
             dialog.destroy()
 
         return None
+
+    def show_help_window(self, *args):
+        w = HelpWindow(self)
+        w.run()
+        w.destroy()
+
+    def show_about_window(self, *args):
+        w = AboutWindow(self)
+        w.run()
+        w.destroy()
 
     def delayed_rerender(self, *args):
         """

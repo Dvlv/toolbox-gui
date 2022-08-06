@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>co.uk.dvlv.toolbox-gui</id>
+  <name>Toolbox GUI</name>
+  <developer_name>Dvlv</developer_name>
+  <launchable type="desktop-id">co.uk.dvlv.toolbox-gui.desktop</launchable>
+  <summary>Graphical Toolbox Manager</summary>
+  <description>
+    <p>
+      A Graphical Application for managing your Toolboxes on Silverblue and Kinoite
+    </p>
+  </description>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <url type="homepage">https://github.com/Dvlv/toolbox-gui</url>
+
+  <releases>
+    <release version="0.1.0" date="2022-08-03"/>
+</releases>
+</component>
