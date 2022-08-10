@@ -12,7 +12,7 @@ A GUI manager for your toolboxes, made with Python and GTK.
 - :package:
     - Run a Command inside Toolbox
     - View Applications inside Toolbox / Copy Applications to Host
-    - Install an RPM File inside Toolbox
+    - Install an RPM File inside Toolbox (The flatpak only has access to `~/Downloads` by default)
     - Update Toolbox
 - :wastebasket: - Delete Toolbox
 
