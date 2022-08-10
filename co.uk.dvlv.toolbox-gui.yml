@@ -5,9 +5,10 @@ sdk: org.gnome.Sdk
 finish-args:
   - --socket=wayland
   - --socket=fallback-x11
-  - --socket=session-bus
   - --filesystem=xdg-data
   - --filesystem=~/.icons
+  - --filesystem=xdg-download:ro
+  - --talk-name=org.freedesktop.Flatpak
 command: toolbox-gui
 modules:
   - name: runner
