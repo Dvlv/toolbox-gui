@@ -40,3 +40,4 @@ Clone this repo, then execute `./toolbox-gui`. A Silverblue / Kinoite installati
 - [ ] Dist Upgrades (sudo dnf update --releasever=36)
 
 - [ ] test
+ 
